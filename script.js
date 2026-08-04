@@ -453,7 +453,7 @@ document.getElementById('exitRyeoMode')?.addEventListener('click', () => {
 
 
 // 실제 D1 기록 게시판 + 연도별 색인
-const dynamicRecordState = { records: [], selectedYear: 'all', search: '' };
+const dynamicRecordState = { records: [], selectedYear: 'all', selectedStatus: 'all', sort: 'newest', search: '' };
 const ARCHIVE_INDEX = window.RYEO_ARCHIVE_INDEX || { startYear: 1912, currentYear: 2026, pre1912:{total:1473}, counts:{} };
 function escapeRecordHtml(value) { return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 function riskTagClass(value) {
@@ -462,18 +462,38 @@ function riskTagClass(value) {
 function statusDotClass(value) {
   return ({'회수 완료':'status-dot--green','분석 중':'status-dot--yellow','회수 대기':'status-dot--orange','관찰 중':'status-dot--blue','격리 유지':'status-dot--violet','열람 금지':'status-dot--red','회수 기록 없음':'status-dot--gray'})[value] || 'status-dot--gray';
 }
-function updateTriadStatusCounts(records) {
-  const publicRecords = Array.isArray(records) ? records : [];
-  const active = publicRecords.filter(record => ['관찰 중', '분석 중', '회수 대기'].includes(record.status)).length;
-  const unresolved = publicRecords.filter(record => record.status === '회수 기록 없음').length;
-  const containment = publicRecords.filter(record => record.status === '격리 유지').length;
-
+function paintTriadStatusCounts({ active = 0, unresolved = 0, containment = 0 } = {}) {
   const activeEl = document.getElementById('triadActiveCount');
   const unresolvedEl = document.getElementById('triadUnresolvedCount');
   const containmentEl = document.getElementById('triadContainmentCount');
-  if (activeEl) activeEl.textContent = `활성 보고 ${active}건`;
-  if (unresolvedEl) unresolvedEl.textContent = `미해명 ${unresolved}건`;
-  if (containmentEl) containmentEl.textContent = `격리 유지 ${containment}건`;
+  if (activeEl) activeEl.textContent = `활성 보고 ${Number(active) || 0}건`;
+  if (unresolvedEl) unresolvedEl.textContent = `미해명 ${Number(unresolved) || 0}건`;
+  if (containmentEl) containmentEl.textContent = `격리 유지 ${Number(containment) || 0}건`;
+}
+
+function updateTriadStatusCountsFromRecords(records) {
+  const publicRecords = Array.isArray(records) ? records : [];
+  paintTriadStatusCounts({
+    active: publicRecords.filter(record => ['관찰 중', '분석 중', '회수 대기'].includes(record.status)).length,
+    unresolved: publicRecords.filter(record => record.status === '회수 기록 없음').length,
+    containment: publicRecords.filter(record => record.status === '격리 유지').length,
+  });
+}
+
+async function loadTriadStatusCounts() {
+  try {
+    const response = await fetch(`/api/records/stats?_=${Date.now()}`, {
+      headers: { accept: 'application/json' },
+      cache: 'no-store',
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || '삼직 보고 통계 오류');
+    paintTriadStatusCounts(data);
+    return true;
+  } catch (error) {
+    console.warn('D1 삼직 보고 통계 집계 실패. 목록 기반 집계로 대체합니다.', error);
+    return false;
+  }
 }
 
 function recordYear(record) {
@@ -490,14 +510,26 @@ function buildYearOptions(select) {
   options.push(`<option value="pre1912">1912년 이전 · 열람 금지 · ${ARCHIVE_INDEX.pre1912.total.toLocaleString()}건</option>`);
   select.innerHTML = options.join('');
 }
+function recordSequence(record) {
+  const match = String(record?.record_no || '').match(/RY-(\d{4})-(\d+)/i);
+  return match ? Number(match[2]) : -1;
+}
+function compareRecordNumbers(a, b, direction = 'newest') {
+  const yearDiff = (recordYear(a) ?? -1) - (recordYear(b) ?? -1);
+  const sequenceDiff = recordSequence(a) - recordSequence(b);
+  const idDiff = String(a.record_no || '').localeCompare(String(b.record_no || ''), 'ko', { numeric: true });
+  const result = yearDiff || sequenceDiff || idDiff;
+  return direction === 'oldest' ? result : -result;
+}
 function filteredPublicRecords() {
   const query = dynamicRecordState.search.trim().toLowerCase();
   return dynamicRecordState.records.filter(record => {
     const year = recordYear(record);
     const yearMatch = dynamicRecordState.selectedYear === 'all' || (dynamicRecordState.selectedYear !== 'pre1912' && year === Number(dynamicRecordState.selectedYear));
-    const queryMatch = !query || `${record.record_no} ${record.title} ${record.region} ${record.record_type}`.toLowerCase().includes(query);
-    return yearMatch && queryMatch;
-  });
+    const statusMatch = dynamicRecordState.selectedStatus === 'all' || record.status === dynamicRecordState.selectedStatus;
+    const queryMatch = !query || `${record.record_no} ${record.title} ${record.region} ${record.record_type} ${record.status}`.toLowerCase().includes(query);
+    return yearMatch && statusMatch && queryMatch;
+  }).sort((a, b) => compareRecordNumbers(a, b, dynamicRecordState.sort));
 }
 function updatePublicYearSummary() {
   const box = document.getElementById('publicYearSummary');
@@ -530,12 +562,22 @@ function renderPublicRecordDirectory() {
 }
 function bindPublicArchiveControls() {
   const yearSelect = document.getElementById('publicRecordYear');
+  const statusSelect = document.getElementById('publicRecordStatus');
+  const sortSelect = document.getElementById('publicRecordSort');
   const search = document.getElementById('publicRecordSearch');
   const button = document.getElementById('publicRecordSearchBtn');
   buildYearOptions(yearSelect);
   if (yearSelect && !yearSelect.dataset.bound) {
     yearSelect.dataset.bound = '1';
     yearSelect.addEventListener('change', () => { dynamicRecordState.selectedYear = yearSelect.value; renderPublicRecordDirectory(); });
+  }
+  if (statusSelect && !statusSelect.dataset.bound) {
+    statusSelect.dataset.bound = '1';
+    statusSelect.addEventListener('change', () => { dynamicRecordState.selectedStatus = statusSelect.value; renderPublicRecordDirectory(); });
+  }
+  if (sortSelect && !sortSelect.dataset.bound) {
+    sortSelect.dataset.bound = '1';
+    sortSelect.addEventListener('change', () => { dynamicRecordState.sort = sortSelect.value; renderPublicRecordDirectory(); });
   }
   const runSearch = () => { dynamicRecordState.search = search?.value || ''; renderPublicRecordDirectory(); };
   if (button && !button.dataset.bound) { button.dataset.bound='1'; button.addEventListener('click', runSearch); }
@@ -547,11 +589,12 @@ async function loadDynamicRyeoRecords() {
   bindPublicArchiveControls();
   if (tbody) tbody.innerHTML = '<tr class="record-loading-row"><td colspan="6">기록망에서 자료를 불러오는 중…</td></tr>';
   try {
-    const response = await fetch('/api/records?limit=500', { headers: { accept: 'application/json' } });
+    const response = await fetch(`/api/records?limit=500&_=${Date.now()}`, { headers: { accept: 'application/json' }, cache: 'no-store' });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || '기록 목록 오류');
-    dynamicRecordState.records = data.records || [];
-    updateTriadStatusCounts(dynamicRecordState.records);
+    dynamicRecordState.records = (data.records || []).slice().sort((a, b) => compareRecordNumbers(a, b, 'newest'));
+    const statsLoaded = await loadTriadStatusCounts();
+    if (!statsLoaded) updateTriadStatusCountsFromRecords(dynamicRecordState.records);
     renderPublicRecordDirectory();
     if (dashBody) {
       dashBody.innerHTML = dynamicRecordState.records.slice(0,4).map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.record_type)}</td><td><span class="tag ${riskTagClass(r.risk_level)}">${escapeRecordHtml(r.risk_level)}</span></td><td><span class="status-dot ${statusDotClass(r.status)}">${escapeRecordHtml(r.status)}</span></td></tr>`).join('') || '<tr class="record-loading-row"><td colspan="5">공개된 사건 기록이 없습니다.</td></tr>';

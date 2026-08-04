@@ -2785,10 +2785,12 @@ body.ryeo-booted .ryeo-dashboard-grid .ryeo-module:nth-child(3) { animation-dela
 
 
 /* 연도별 기록 색인 */
-.ryeo-record-controls { display:flex; align-items:flex-end; gap:12px; }
-.ryeo-year-control { display:grid; gap:5px; min-width:245px; }
-.ryeo-year-control > span { color:#587089; font-size:9px; letter-spacing:.12em; }
-.ryeo-year-control select {
+.ryeo-record-controls { display:flex; align-items:flex-end; justify-content:flex-end; flex-wrap:wrap; gap:12px; }
+.ryeo-year-control, .ryeo-filter-control { display:grid; gap:5px; min-width:190px; }
+.ryeo-year-control { min-width:245px; }
+.ryeo-sort-control { min-width:145px; }
+.ryeo-year-control > span, .ryeo-filter-control > span { color:#587089; font-size:9px; letter-spacing:.12em; }
+.ryeo-year-control select, .ryeo-filter-control select {
   height:38px; padding:0 36px 0 11px; border:1px solid rgba(129,154,183,.18); border-radius:5px;
   background:#0b1119; color:#aebed0; font-size:11px;
 }
@@ -2805,7 +2807,7 @@ body.ryeo-booted .ryeo-dashboard-grid .ryeo-module:nth-child(3) { animation-dela
 .year-lock-mark { width:52px; height:52px; display:grid; place-items:center; border:1px solid rgba(180,100,100,.28); color:#b87b7b; font-family:"Batang",serif; font-size:22px; }
 .ryeo-year-summary.is-locked p { margin:7px 0 0; color:#806f72; font-size:11px; }
 .ryeo-year-summary.is-locked b { color:#c99999; }
-@media(max-width:900px){.ryeo-record-controls{display:grid;width:100%;margin-top:14px}.ryeo-year-control{min-width:0}.ryeo-year-summary{align-items:flex-start}.year-summary-numbers{text-align:left}}
+@media(max-width:900px){.ryeo-record-controls{display:grid;width:100%;margin-top:14px}.ryeo-year-control,.ryeo-filter-control{min-width:0}.ryeo-year-summary{align-items:flex-start}.year-summary-numbers{text-align:left}}
 
 
 /* =========================================================

@@ -599,6 +599,26 @@
                   <span>기록 연도</span>
                   <select id="publicRecordYear"></select>
                 </label>
+                <label class="ryeo-filter-control">
+                  <span>진행 상태</span>
+                  <select id="publicRecordStatus">
+                    <option value="all">전체 상태</option>
+                    <option value="관찰 중">관찰 중</option>
+                    <option value="분석 중">분석 중</option>
+                    <option value="회수 대기">회수 대기</option>
+                    <option value="격리 유지">격리 유지</option>
+                    <option value="회수 완료">회수 완료</option>
+                    <option value="회수 기록 없음">회수 기록 없음</option>
+                    <option value="열람 금지">열람 금지</option>
+                  </select>
+                </label>
+                <label class="ryeo-filter-control ryeo-sort-control">
+                  <span>정렬 기준</span>
+                  <select id="publicRecordSort">
+                    <option value="newest">최신 기록순</option>
+                    <option value="oldest">오래된 기록순</option>
+                  </select>
+                </label>
                 <div class="ryeo-search">
                   <input id="publicRecordSearch" type="text" placeholder="기록번호 또는 임시 명칭 검색" />
                   <button id="publicRecordSearchBtn" type="button">조회</button>

@@ -2959,3 +2959,48 @@ body.mark-activated #searchInput {
   .hidden-mark::before { inset: -10px; }
   .hidden-mark::after { inset: -17px; }
 }
+
+
+/* v11: 기록 이관 자료 확인 → 숨겨진 표식 공개 → 비밀번호 인증 */
+.hidden-record-line {
+  width: 100%;
+}
+.hidden-mark {
+  width: 40px;
+  height: 44px;
+  margin-left: 12px;
+  transform: translateX(10px);
+  opacity: .48;
+}
+.hidden-mark__svg {
+  width: 27px;
+  height: 39px;
+}
+.hidden-mark.is-concealed {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateX(22px) scale(.72);
+  pointer-events: none;
+}
+.hidden-mark:not(.is-concealed) {
+  visibility: visible;
+}
+.hidden-mark.is-activated {
+  transform: translateX(10px) scale(1.16);
+}
+@keyframes markSignalPulse {
+  0%, 100% { transform: translateX(10px) scale(1.12); }
+  45% { transform: translateX(10px) scale(1.21); }
+  52% { transform: translateX(8px) scale(1.20); }
+  58% { transform: translateX(12px) scale(1.20); }
+}
+@media (max-width: 760px) {
+  .hidden-mark {
+    width: 42px;
+    height: 46px;
+    margin-left: 8px;
+    transform: translateX(6px);
+  }
+  .hidden-mark__svg { width: 29px; height: 41px; }
+  .hidden-mark.is-activated { transform: translateX(6px) scale(1.18); }
+}

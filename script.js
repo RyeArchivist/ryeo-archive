@@ -50,6 +50,7 @@ const toggleRecordMode = document.getElementById('toggleRecordMode');
 
 let ryeoActivated = false;
 let markActivated = false;
+let markRevealed = false;
 let markActivationTimer = null;
 
 function renderRecords(records) {
@@ -79,12 +80,20 @@ function renderNoticeList() {
   `).join('');
 }
 
-function setMarkActivation(active, message = '') {
+function setMarkActivation(active, message = '', concealOnDeactivate = false) {
   const mark = document.getElementById('hiddenMark');
   markActivated = active;
   document.body.classList.toggle('mark-activated', active);
   mark?.classList.toggle('is-activated', active);
   mark?.setAttribute('aria-pressed', active ? 'true' : 'false');
+
+  if (active) {
+    markRevealed = true;
+    mark?.classList.remove('is-concealed');
+  } else if (concealOnDeactivate) {
+    markRevealed = false;
+    mark?.classList.add('is-concealed');
+  }
 
   if (markActivationTimer) {
     window.clearTimeout(markActivationTimer);
@@ -93,15 +102,15 @@ function setMarkActivation(active, message = '') {
 
   if (active) {
     searchPanel.hidden = false;
-    searchInput.placeholder = '연결 코드 입력';
+    searchInput.placeholder = '비밀번호 입력';
     searchInput.value = '';
-    searchResult.innerHTML = `<p class="mark-activation-message"><strong>:| 표식 활성화됨</strong><br />기록망 연결 대기 중${message ? `<br />${message}` : ''}</p>`;
-    searchInput.focus();
+    searchResult.innerHTML = `<p class="mark-activation-message"><strong>:| 표식 활성화됨</strong><br />이관 기록 인증 대기 중${message ? `<br />${message}` : ''}</p>`;
+    window.setTimeout(() => searchInput.focus(), 520);
 
     markActivationTimer = window.setTimeout(() => {
       if (!ryeoActivated) {
-        setMarkActivation(false);
-        searchResult.innerHTML = '<p class="mark-expired-message">연결 시간이 만료되었습니다. 표식을 다시 활성화하십시오.</p>';
+        setMarkActivation(false, '', true);
+        searchResult.innerHTML = '<p class="mark-expired-message">인증 시간이 만료되었습니다. 기록 이관 자료를 다시 확인하십시오.</p>';
       }
     }, 30000);
   } else {
@@ -389,18 +398,32 @@ document.querySelectorAll('#mobileMenu a[href^="#"]').forEach((link) => {
 });
 
 document.getElementById('secretYearBtn').addEventListener('click', () => {
-  searchPanel.hidden = false;
-  searchInput.focus();
-  searchResult.innerHTML = '<p>연혁 자료를 검색할 수 있습니다.</p>';
+  if (ryeoActivated) return;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  rollingNotice.textContent = '기록 이관 요청 감지 · 비인가 표식 발견';
+
+  // 이관 자료 확인 단계에서는 검색창을 열지 않고 표식만 공개한다.
+  searchPanel.hidden = true;
+  searchInput.value = '';
+  searchResult.innerHTML = '';
+
+  window.setTimeout(() => {
+    const mark = document.getElementById('hiddenMark');
+    markRevealed = true;
+    markActivated = false;
+    mark?.classList.remove('is-concealed');
+    mark?.classList.remove('is-activated');
+    mark?.setAttribute('aria-pressed', 'false');
+    document.body.classList.remove('mark-activated');
+  }, 420);
 });
 
 document.getElementById('hiddenMark').addEventListener('click', (event) => {
   event.preventDefault();
-  if (ryeoActivated) return;
-  setMarkActivation(!markActivated);
-  rollingNotice.textContent = markActivated
-    ? '비인가 표식 감지 · 기록망 연결 대기 중'
-    : '2026년 지역 생활환경기록 수집사업 안내';
+  if (ryeoActivated || !markRevealed) return;
+  if (!markActivated) setMarkActivation(true, '비밀번호를 입력하십시오.');
+  searchPanel.hidden = false;
+  searchInput.focus();
 });
 
 document.addEventListener('click', (e) => {

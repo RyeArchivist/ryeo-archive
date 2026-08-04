@@ -48,9 +48,9 @@ const brandKorean = document.getElementById('brandKorean');
 const brandEnglish = document.getElementById('brandEnglish');
 const toggleRecordMode = document.getElementById('toggleRecordMode');
 
-const triggerSequence = ['intro', 'year1912', 'mark', 'search1912'];
-let triggerStep = 0;
 let ryeoActivated = false;
+let markActivated = false;
+let markActivationTimer = null;
 
 function renderRecords(records) {
   recordTableBody.innerHTML = records.map(r => `
@@ -79,15 +79,36 @@ function renderNoticeList() {
   `).join('');
 }
 
-function registerSequence(action) {
-  if (ryeoActivated) return;
-  if (action === triggerSequence[triggerStep]) {
-    triggerStep += 1;
-    if (triggerStep === triggerSequence.length) beginRyeoTransition();
+function setMarkActivation(active, message = '') {
+  const mark = document.getElementById('hiddenMark');
+  markActivated = active;
+  document.body.classList.toggle('mark-activated', active);
+  mark?.classList.toggle('is-activated', active);
+  mark?.setAttribute('aria-pressed', active ? 'true' : 'false');
+
+  if (markActivationTimer) {
+    window.clearTimeout(markActivationTimer);
+    markActivationTimer = null;
+  }
+
+  if (active) {
+    searchPanel.hidden = false;
+    searchInput.placeholder = '연결 코드 입력';
+    searchInput.value = '';
+    searchResult.innerHTML = `<p class="mark-activation-message"><strong>:| 표식 활성화됨</strong><br />기록망 연결 대기 중${message ? `<br />${message}` : ''}</p>`;
+    searchInput.focus();
+
+    markActivationTimer = window.setTimeout(() => {
+      if (!ryeoActivated) {
+        setMarkActivation(false);
+        searchResult.innerHTML = '<p class="mark-expired-message">연결 시간이 만료되었습니다. 표식을 다시 활성화하십시오.</p>';
+      }
+    }, 30000);
   } else {
-    triggerStep = action === triggerSequence[0] ? 1 : 0;
+    searchInput.placeholder = '검색어를 입력하세요.';
   }
 }
+
 
 let ryeoTransitionRunning = false;
 let transitionTimers = [];
@@ -243,6 +264,10 @@ function beginRyeoTransition() {
 
 function activateRyeoMode() {
   ryeoActivated = true;
+  if (markActivationTimer) window.clearTimeout(markActivationTimer);
+  markActivationTimer = null;
+  markActivated = false;
+  document.body.classList.remove('mark-activated');
   document.body.classList.add('ryeo-mode');
   document.title = '慮 記錄網';
   ryeoPanel.hidden = false;
@@ -300,8 +325,14 @@ function runSearch() {
   }
 
   if (value === '1912') {
-    searchResult.innerHTML = '<p class="search-anomaly"><strong>검색 결과 1건</strong><br />AR-1912-000 / 제목 없음 / 상태: 비공개</p>';
-    registerSequence('search1912');
+    if (markActivated) {
+      searchResult.innerHTML = '<p class="search-anomaly"><strong>연결 코드 확인</strong><br />慮 기록망 응답 감지 · 제한 열람을 시작합니다.</p>';
+      if (markActivationTimer) window.clearTimeout(markActivationTimer);
+      markActivationTimer = null;
+      window.setTimeout(beginRyeoTransition, 420);
+    } else {
+      searchResult.innerHTML = '<p>검색 결과가 없습니다.</p>';
+    }
   } else if (value.toLowerCase() === ':|') {
     searchResult.innerHTML = '<p>기록은 이름과 표식으로 시작하고 끝난다.</p>';
   } else {
@@ -339,7 +370,6 @@ document.querySelectorAll('.nav button').forEach(btn => {
     const action = btn.dataset.action;
     const target = document.getElementById(action);
     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (action === 'intro') registerSequence('intro');
   });
 });
 
@@ -355,23 +385,22 @@ document.querySelectorAll('#mobileMenu a[href^="#"]').forEach((link) => {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    if (targetId === 'intro') {
-      registerSequence('intro');
-    }
   });
 });
 
 document.getElementById('secretYearBtn').addEventListener('click', () => {
-  registerSequence('year1912');
   searchPanel.hidden = false;
   searchInput.focus();
-  searchResult.innerHTML = '<p>연혁 자료가 검색창으로 이관되었습니다. 숫자만 입력해 확인하십시오.</p>';
+  searchResult.innerHTML = '<p>연혁 자료를 검색할 수 있습니다.</p>';
 });
 
 document.getElementById('hiddenMark').addEventListener('click', (event) => {
   event.preventDefault();
-  registerSequence('mark');
-  rollingNotice.textContent = '기록은 이름과 표식으로 시작하고 끝난다.';
+  if (ryeoActivated) return;
+  setMarkActivation(!markActivated);
+  rollingNotice.textContent = markActivated
+    ? '비인가 표식 감지 · 기록망 연결 대기 중'
+    : '2026년 지역 생활환경기록 수집사업 안내';
 });
 
 document.addEventListener('click', (e) => {

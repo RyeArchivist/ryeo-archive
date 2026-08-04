@@ -179,14 +179,15 @@ function typeTransitionText(element, text, speed, delay) {
 
 function startTransitionTyping() {
   resetTransitionTyping();
+
   const title = document.getElementById('transitionTypingTitle');
   if (title) {
-    typeTransitionText(title, title.dataset.text || '', 88, 170);
+    typeTransitionText(title, title.dataset.text || '', 42, 0);
   }
 
-  const schedule = [760, 1350, 1910, 2470, 3060];
+  const schedule = [520, 1030, 1510, 1980, 2450];
   document.querySelectorAll('[data-transition-line]').forEach((line, idx) => {
-    typeTransitionText(line, line.dataset.text || '', 52, schedule[idx] || (780 + idx * 500));
+    typeTransitionText(line, line.dataset.text || '', 26, schedule[idx] || (520 + idx * 470));
   });
 }
 
@@ -197,28 +198,47 @@ function beginRyeoTransition() {
 
   const transition = document.getElementById('accessTransition');
   document.body.classList.add('access-transitioning');
-  transition?.classList.add('is-active');
+  transition?.classList.add('is-active', 'phase-emblem');
+  transition?.classList.remove('phase-terminal', 'phase-complete');
   transition?.setAttribute('aria-hidden', 'false');
 
   if (searchInput) searchInput.blur();
-  startTransitionTyping();
+  resetTransitionTyping();
 
+  // 1단계: 慮 로고만 보여주기
+  queueTransitionTimer(() => {
+    transition?.classList.add('phase-emblem-out');
+  }, 1450);
+
+  // 2단계: 로고가 사라진 뒤 터미널 표시 + 타이핑 시작
+  queueTransitionTimer(() => {
+    transition?.classList.remove('phase-emblem', 'phase-emblem-out');
+    transition?.classList.add('phase-terminal');
+    startTransitionTyping();
+  }, 1760);
+
+  // 3단계: 모든 문구 완성 상태 유지
+  queueTransitionTimer(() => {
+    transition?.classList.add('phase-complete');
+  }, 4700);
+
+  // 4단계: 내부망 진입
   queueTransitionTimer(() => {
     activateRyeoMode();
     document.body.classList.add('ryeo-entering');
-  }, 4200);
+  }, 5350);
 
   queueTransitionTimer(() => {
-    transition?.classList.remove('is-active');
+    transition?.classList.remove('is-active', 'phase-emblem', 'phase-emblem-out', 'phase-terminal', 'phase-complete');
     transition?.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('access-transitioning');
     ryeoTransitionRunning = false;
     resetTransitionTyping();
-  }, 5050);
+  }, 6100);
 
   queueTransitionTimer(() => {
     document.body.classList.remove('ryeo-entering');
-  }, 5430);
+  }, 6500);
 }
 
 function activateRyeoMode() {
@@ -397,7 +417,7 @@ document.getElementById('exitRyeoMode')?.addEventListener('click', () => {
   ryeoActivated = false;
   clearTransitionTimers();
   resetTransitionTyping();
-  document.getElementById('accessTransition')?.classList.remove('is-active');
+  document.getElementById('accessTransition')?.classList.remove('is-active', 'phase-emblem', 'phase-emblem-out', 'phase-terminal', 'phase-complete');
   document.getElementById('accessTransition')?.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('ryeo-mode', 'ryeo-entering', 'access-transitioning');
   document.title = '생활환경기록보존원 | LEAF';

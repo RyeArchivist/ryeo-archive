@@ -2224,3 +2224,152 @@ body.access-transitioning::after {
     font-size: 12px;
   }
 }
+
+
+/* =========================================================
+   v8: 로고 → 타이핑 → 완료 → 내부망 순차 전환
+   ========================================================= */
+.access-transition__emblem-wrap,
+.access-transition__terminal {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.access-transition.phase-emblem .access-transition__emblem-wrap {
+  opacity: 1;
+  animation: emblemStageIn .28s ease-out both;
+}
+
+.access-transition.phase-emblem-out .access-transition__emblem-wrap {
+  animation: emblemStageOut .30s steps(2,end) forwards;
+}
+
+.access-transition.phase-terminal .access-transition__terminal,
+.access-transition.phase-complete .access-transition__terminal {
+  opacity: 1;
+  animation: terminalStageIn .25s ease-out both;
+}
+
+.access-transition.phase-terminal .access-transition__emblem-wrap,
+.access-transition.phase-complete .access-transition__emblem-wrap {
+  display: none;
+}
+
+/* 기존 자동 terminalAppear 애니메이션 무효화 */
+.access-transition.is-active .access-transition__terminal {
+  animation: none;
+}
+
+.access-transition__emblem-wrap {
+  top: 50%;
+  width: min(290px, 46vw);
+}
+
+.access-transition.phase-emblem .access-transition__emblem--main {
+  animation: emblemV8Main .14s steps(2,end) .04s 10,
+             emblemV8Hold 1.55s linear forwards;
+}
+
+.access-transition.phase-emblem .access-transition__emblem--red {
+  animation: emblemV8Red .11s steps(2,end) .03s 12;
+}
+
+.access-transition.phase-emblem .access-transition__emblem--cyan {
+  animation: emblemV8Cyan .10s steps(2,end) .02s 13;
+}
+
+.access-transition.phase-terminal .access-transition__terminal {
+  top: 50%;
+}
+
+.access-transition.phase-complete .access-transition__terminal {
+  filter: brightness(1.06);
+}
+
+.access-transition.phase-complete .access-transition__progress i {
+  width: 100% !important;
+}
+
+/* 타이핑 중 줄이 잘리지 않도록 */
+.access-transition__typing,
+.access-transition__lines p {
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.access-transition__lines {
+  min-height: 172px;
+}
+
+.access-transition.phase-terminal .access-transition__progress i,
+.access-transition.phase-complete .access-transition__progress i {
+  animation: accessProgressV8 3.1s cubic-bezier(.18,.75,.24,1) .10s forwards;
+}
+
+@keyframes emblemStageIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(.90); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes emblemStageOut {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: none; }
+  24% { opacity: .82; transform: translate(-48%, -50%) scale(1.03); filter: contrast(1.7); }
+  42% { opacity: .28; transform: translate(-53%, -50%) scale(.98); filter: invert(1) contrast(2); }
+  58% { opacity: .72; transform: translate(-49%, -50%) scale(1.01); filter: none; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(.86); filter: blur(4px); }
+}
+
+@keyframes terminalStageIn {
+  from { opacity: 0; transform: translate(-50%, -47%); filter: blur(2px); }
+  to { opacity: 1; transform: translate(-50%, -50%); filter: none; }
+}
+
+@keyframes emblemV8Main {
+  0%,100% { opacity: .88; transform: translate(0,0) scale(1); }
+  25% { opacity: .16; transform: translate(3px,-1px) scale(1.01); }
+  50% { opacity: 1; transform: translate(-2px,1px) scale(.995); }
+  75% { opacity: .30; transform: translate(1px,0) scale(1.005); }
+}
+
+@keyframes emblemV8Hold {
+  0% { opacity: 0; }
+  12% { opacity: .86; }
+  35% { opacity: .72; }
+  72% { opacity: .92; }
+  100% { opacity: .82; }
+}
+
+@keyframes emblemV8Red {
+  0%,100% { opacity: 0; transform: translate(0,0); }
+  50% { opacity: .48; transform: translate(12px,0); }
+}
+
+@keyframes emblemV8Cyan {
+  0%,100% { opacity: 0; transform: translate(0,0); }
+  50% { opacity: .46; transform: translate(-12px,0); }
+}
+
+@keyframes accessProgressV8 {
+  0% { width: 0; }
+  18% { width: 12%; }
+  34% { width: 36%; }
+  55% { width: 63%; }
+  76% { width: 84%; }
+  100% { width: 100%; }
+}
+
+@media (max-width: 760px) {
+  .access-transition__emblem-wrap {
+    top: 45%;
+    width: min(210px, 54vw);
+  }
+
+  .access-transition.phase-terminal .access-transition__terminal {
+    top: 57%;
+  }
+
+  .access-transition__typing,
+  .access-transition__lines p {
+    white-space: normal;
+  }
+}

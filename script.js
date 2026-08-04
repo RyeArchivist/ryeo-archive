@@ -92,14 +92,29 @@ function registerSequence(action) {
 function activateRyeoMode() {
   ryeoActivated = true;
   document.body.classList.add('ryeo-mode');
-  brandKorean.textContent = '慮 記錄網';
-  brandEnglish.textContent = 'Ryeo Archive Network';
   document.title = '慮 記錄網';
-  renderRecords(ryeoRecords);
   ryeoPanel.hidden = false;
-  rollingNotice.textContent = '비인가 접근 경로가 확인되었습니다. 제한 열람을 허가합니다.';
-  searchInput.placeholder = '기록번호를 입력하십시오.';
-  searchResult.innerHTML = '<p>기록 계통 확인. 제한 열람이 허가되었습니다.</p>';
+
+  const now = new Date();
+  const clock = document.getElementById('ryeoClock');
+  if (clock) {
+    const updateClock = () => {
+      const current = new Date();
+      clock.textContent = current.toLocaleTimeString('ko-KR', { hour12: false });
+    };
+    updateClock();
+    window.ryeoClockTimer = setInterval(updateClock, 1000);
+  }
+
+  const logItems = document.querySelectorAll('#ryeoAccessLog time');
+  logItems.forEach((time, index) => {
+    const t = new Date(now.getTime() - (logItems.length - index - 1) * 1000);
+    time.textContent = t.toLocaleTimeString('ko-KR', { hour12: false });
+  });
+
+  requestAnimationFrame(() => {
+    document.querySelector('.ryeo-workspace')?.scrollTo({ top: 0 });
+  });
 }
 
 function openPopup() {
@@ -202,4 +217,58 @@ document.addEventListener('click', (e) => {
 
 toggleRecordMode.addEventListener('click', () => {
   renderRecords(ryeoActivated ? ryeoRecords : publicRecords);
+});
+
+
+// 慮 내부 기록망 메뉴
+document.querySelectorAll('[data-ryeo-view]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const viewName = button.dataset.ryeoView;
+    document.querySelectorAll('[data-ryeo-view]').forEach((item) => {
+      item.classList.toggle('is-active', item === button);
+    });
+    document.querySelectorAll('.ryeo-view').forEach((view) => {
+      view.classList.toggle('is-visible', view.dataset.view === viewName);
+    });
+
+    const titleMap = {
+      dashboard: '종합 현황',
+      records: '사건 기록',
+      triad: '삼직 보고',
+      anomaly: '괴이 분류',
+      recovery: '회수 관리',
+      forbidden: '禁錄',
+      scripture: '慮經',
+      keeper: '기록관'
+    };
+
+    const title = document.getElementById('ryeoViewTitle');
+    if (title) title.textContent = titleMap[viewName] || '내부 기록망';
+
+    document.querySelector('.ryeo-workspace')?.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  });
+});
+
+document.querySelectorAll('[data-open-view]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const target = document.querySelector(
+      `[data-ryeo-view="${button.dataset.openView}"]`
+    );
+    target?.click();
+  });
+});
+
+document.getElementById('exitRyeoMode')?.addEventListener('click', () => {
+  ryeoActivated = false;
+  document.body.classList.remove('ryeo-mode');
+  document.title = '생활환경기록보존원 | LEAF';
+  ryeoPanel.hidden = true;
+  clearInterval(window.ryeoClockTimer);
+  triggerStep = 0;
+  searchPanel.hidden = true;
+  searchInput.value = '';
+  searchResult.innerHTML = '';
 });

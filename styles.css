@@ -538,3 +538,764 @@ body.ryeo-mode .hero__lead { color: rgba(242,247,255,.82); }
   .table-wrap { overflow-x: auto; }
   table { min-width: 620px; }
 }
+
+
+/* =========================================================
+   慮 내부 기록망
+   ========================================================= */
+
+body.ryeo-mode {
+  overflow: hidden;
+  background: #070b11;
+}
+
+body.ryeo-mode > .top-banner,
+body.ryeo-mode > .header,
+body.ryeo-mode > .search-panel,
+body.ryeo-mode > main > section:not(.ryeo-system),
+body.ryeo-mode > .footer,
+body.ryeo-mode > .mobile-menu,
+body.ryeo-mode > .site-popup {
+  display: none !important;
+}
+
+body.ryeo-mode > main {
+  min-height: 100vh;
+}
+
+.ryeo-system {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 272px minmax(0, 1fr);
+  background:
+    radial-gradient(circle at 80% 10%, rgba(31, 86, 120, .10), transparent 28%),
+    #090e15;
+  color: #d7e0ec;
+}
+
+.ryeo-system[hidden] {
+  display: none;
+}
+
+.ryeo-sidebar {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 20px;
+  border-right: 1px solid rgba(129, 154, 183, .16);
+  background: #0c121b;
+}
+
+.ryeo-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 8px 22px;
+  border-bottom: 1px solid rgba(129, 154, 183, .15);
+}
+
+.ryeo-brand__logo {
+  width: 124px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(255,255,255,.06));
+}
+
+.ryeo-brand__sub {
+  min-width: 0;
+}
+
+.ryeo-brand strong {
+  display: block;
+  color: #f3f7fb;
+  font-size: 17px;
+  letter-spacing: .08em;
+}
+
+.ryeo-brand span {
+  display: block;
+  margin-top: 4px;
+  color: #71859c;
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+
+.ryeo-nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 24px;
+}
+
+.ryeo-nav button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 13px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #8fa0b4;
+  text-align: left;
+  border-radius: 8px;
+  font-weight: 700;
+  transition: .18s ease;
+}
+
+.ryeo-nav button span {
+  width: 24px;
+  color: #4f647a;
+  font-size: 10px;
+  letter-spacing: .08em;
+}
+
+.ryeo-nav button:hover,
+.ryeo-nav button.is-active {
+  border-color: rgba(78, 141, 181, .25);
+  background: rgba(44, 94, 126, .14);
+  color: #e8f3ff;
+}
+
+.ryeo-nav button.is-active span {
+  color: #79a9c7;
+}
+
+.ryeo-sidebar__footer {
+  margin-top: auto;
+  padding: 18px 8px 0;
+  border-top: 1px solid rgba(129, 154, 183, .15);
+}
+
+.ryeo-signal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8194a9;
+  font-size: 12px;
+}
+
+.ryeo-signal i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #63c48f;
+  box-shadow: 0 0 12px rgba(99, 196, 143, .6);
+}
+
+.ryeo-sidebar__footer small {
+  display: block;
+  margin-top: 8px;
+  color: #4e6073;
+  font-size: 9px;
+  letter-spacing: .09em;
+}
+
+.ryeo-workspace {
+  min-width: 0;
+  height: 100vh;
+  overflow: auto;
+}
+
+.ryeo-topbar {
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 28px;
+  border-bottom: 1px solid rgba(129, 154, 183, .15);
+  background: rgba(10, 16, 24, .88);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 4;
+}
+
+.ryeo-topbar p {
+  margin: 0;
+  color: #5f758c;
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.ryeo-topbar h1 {
+  margin: 4px 0 0;
+  color: #edf5fc;
+  font-size: 25px;
+  letter-spacing: -.03em;
+}
+
+.ryeo-topbar__status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ryeo-topbar__status > div {
+  min-width: 104px;
+  padding: 8px 12px;
+  border-left: 1px solid rgba(129, 154, 183, .15);
+}
+
+.ryeo-topbar__status span {
+  display: block;
+  color: #596f85;
+  font-size: 9px;
+  letter-spacing: .08em;
+}
+
+.ryeo-topbar__status strong {
+  display: block;
+  margin-top: 3px;
+  color: #d8e6f2;
+  font-size: 13px;
+}
+
+.ryeo-topbar__status .status-warn {
+  color: #d8a676;
+}
+
+.ryeo-topbar__status button {
+  padding: 10px 14px;
+  border: 1px solid rgba(129, 154, 183, .2);
+  background: transparent;
+  color: #90a3b7;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.ryeo-content {
+  padding: 26px 28px 50px;
+}
+
+.ryeo-view {
+  display: none;
+}
+
+.ryeo-view.is-visible {
+  display: block;
+}
+
+.ryeo-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 15px 18px;
+  border: 1px solid rgba(173, 112, 74, .26);
+  background: linear-gradient(90deg, rgba(123, 67, 38, .15), rgba(50, 35, 28, .06));
+}
+
+.ryeo-alert span {
+  display: block;
+  color: #aa785b;
+  font-size: 9px;
+  letter-spacing: .12em;
+}
+
+.ryeo-alert strong {
+  color: #e0c9ba;
+  font-size: 14px;
+}
+
+.ryeo-alert p {
+  margin: 0;
+  color: #826d61;
+  font-size: 12px;
+}
+
+.ryeo-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.ryeo-metrics article,
+.ryeo-module,
+.ryeo-office,
+.ryeo-class-grid article,
+.ryeo-forbidden,
+.ryeo-scripture,
+.ryeo-keeper {
+  border: 1px solid rgba(129, 154, 183, .14);
+  background: #0f1620;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .015);
+}
+
+.ryeo-metrics article {
+  padding: 18px;
+}
+
+.ryeo-metrics span {
+  color: #697f95;
+  font-size: 11px;
+}
+
+.ryeo-metrics strong {
+  display: block;
+  margin: 8px 0 4px;
+  color: #f1f6fb;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.ryeo-metrics small {
+  color: #506479;
+  font-size: 10px;
+}
+
+.ryeo-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, .7fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.ryeo-module {
+  min-width: 0;
+  padding: 18px;
+}
+
+.ryeo-module--wide {
+  grid-row: span 2;
+}
+
+.ryeo-module__head,
+.ryeo-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.ryeo-module__head {
+  margin-bottom: 14px;
+}
+
+.ryeo-module__head span,
+.ryeo-section-title span {
+  color: #587089;
+  font-size: 9px;
+  letter-spacing: .14em;
+}
+
+.ryeo-module__head h2,
+.ryeo-section-title h2 {
+  margin: 4px 0 0;
+  color: #dfe9f2;
+  font-size: 17px;
+  letter-spacing: -.02em;
+}
+
+.ryeo-module__head button,
+.ryeo-search button,
+.ryeo-scripture button {
+  border: 1px solid rgba(129, 154, 183, .18);
+  background: transparent;
+  color: #778da3;
+  padding: 8px 11px;
+  border-radius: 5px;
+  font-size: 11px;
+}
+
+.ryeo-table-wrap {
+  overflow: auto;
+}
+
+.ryeo-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.ryeo-table th,
+.ryeo-table td {
+  padding: 12px 11px;
+  border-bottom: 1px solid rgba(129, 154, 183, .10);
+  text-align: left;
+  font-size: 11px;
+}
+
+.ryeo-table th {
+  color: #566c82;
+  font-weight: 600;
+}
+
+.ryeo-table td {
+  color: #aebdcb;
+}
+
+.ryeo-table tbody tr:hover {
+  background: rgba(59, 101, 132, .08);
+}
+
+.ryeo-table--large th,
+.ryeo-table--large td {
+  padding: 15px 13px;
+  font-size: 12px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 4px 7px;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 9px;
+}
+
+.tag--orange { color: #d6a36e; border-color: rgba(214, 163, 110, .3); background: rgba(214, 163, 110, .07); }
+.tag--blue { color: #7fa9c8; border-color: rgba(127, 169, 200, .3); background: rgba(127, 169, 200, .07); }
+.tag--red { color: #cb7777; border-color: rgba(203, 119, 119, .3); background: rgba(203, 119, 119, .07); }
+.tag--gray { color: #7f8d9b; border-color: rgba(127, 141, 155, .3); background: rgba(127, 141, 155, .07); }
+
+.status-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.status-dot::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-dot--green::before { background: #61b98b; }
+.status-dot--yellow::before { background: #c6a55e; }
+.status-dot--red::before { background: #c66c6c; }
+.status-dot--gray::before { background: #697784; }
+
+.ryeo-queue,
+.ryeo-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ryeo-queue li {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(129, 154, 183, .10);
+}
+
+.ryeo-queue li > span {
+  color: #4a6075;
+  font-size: 10px;
+}
+
+.ryeo-queue strong,
+.ryeo-log span {
+  display: block;
+  color: #a9b7c5;
+  font-size: 11px;
+}
+
+.ryeo-queue small {
+  display: block;
+  margin-top: 3px;
+  color: #52677c;
+  font-size: 9px;
+}
+
+.ryeo-log li {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(129, 154, 183, .08);
+}
+
+.ryeo-log time {
+  color: #50667b;
+  font-size: 10px;
+  font-family: monospace;
+}
+
+.ryeo-section-title {
+  margin-bottom: 18px;
+}
+
+.ryeo-section-title h2 {
+  font-size: 24px;
+}
+
+.ryeo-search {
+  display: flex;
+  gap: 8px;
+}
+
+.ryeo-search input {
+  width: 280px;
+  padding: 10px 12px;
+  border: 1px solid rgba(129, 154, 183, .18);
+  background: #0b1119;
+  color: #ccd8e3;
+  border-radius: 5px;
+}
+
+.ryeo-office-grid,
+.ryeo-class-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.ryeo-office,
+.ryeo-class-grid article {
+  padding: 24px;
+}
+
+.ryeo-office > span,
+.ryeo-class-grid article > span {
+  color: #6e94af;
+  font-family: "Noto Serif KR", "Batang", serif;
+  font-size: 36px;
+}
+
+.ryeo-office h3,
+.ryeo-class-grid h3 {
+  margin: 12px 0 8px;
+  color: #dbe6ef;
+  font-size: 17px;
+}
+
+.ryeo-office p,
+.ryeo-class-grid p {
+  margin: 0;
+  color: #708399;
+  font-size: 12px;
+}
+
+.ryeo-office strong {
+  display: block;
+  margin-top: 18px;
+  color: #94a7ba;
+  font-size: 11px;
+}
+
+.ryeo-class-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.ryeo-empty-state,
+.ryeo-forbidden,
+.ryeo-scripture {
+  padding: 55px 30px;
+  text-align: center;
+}
+
+.ryeo-empty-state strong,
+.ryeo-forbidden strong {
+  color: #d7e1ea;
+  font-size: 16px;
+}
+
+.ryeo-empty-state p,
+.ryeo-forbidden p,
+.ryeo-scripture p {
+  color: #687d92;
+  font-size: 12px;
+}
+
+.ryeo-lock {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 18px;
+  border: 1px solid rgba(172, 108, 108, .24);
+  color: #a76f6f;
+  font-family: "Noto Serif KR", "Batang", serif;
+  font-size: 26px;
+}
+
+.ryeo-scripture blockquote {
+  margin: 0 0 22px;
+  color: #d9e3ec;
+  font-family: "Noto Serif KR", "Batang", serif;
+  font-size: 22px;
+  line-height: 1.9;
+}
+
+.ryeo-keeper {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 26px;
+  align-items: center;
+  padding: 34px;
+}
+
+.ryeo-keeper__mark {
+  width: 110px;
+  height: 110px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(129, 154, 183, .18);
+  color: #738da3;
+  font-family: "Noto Serif KR", "Batang", serif;
+  font-size: 50px;
+}
+
+.ryeo-keeper span {
+  color: #526a80;
+  font-size: 9px;
+  letter-spacing: .14em;
+}
+
+.ryeo-keeper h3 {
+  margin: 7px 0 16px;
+  color: #dbe5ee;
+  font-size: 20px;
+}
+
+.ryeo-keeper p {
+  margin: 5px 0;
+  color: #718499;
+  font-size: 12px;
+}
+
+@media (max-width: 1050px) {
+  .ryeo-system {
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+
+  .ryeo-brand {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .ryeo-brand__sub,
+  .ryeo-nav button:not(.is-active) {
+    font-size: 0;
+  }
+
+  .ryeo-nav button {
+    justify-content: center;
+  }
+
+  .ryeo-nav button span {
+    font-size: 10px;
+  }
+
+  .ryeo-sidebar__footer {
+    display: none;
+  }
+
+  .ryeo-metrics,
+  .ryeo-office-grid,
+  .ryeo-class-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ryeo-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ryeo-module--wide {
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  body.ryeo-mode {
+    overflow: auto;
+  }
+
+  .ryeo-system {
+    display: block;
+  }
+
+  .ryeo-sidebar {
+    min-height: auto;
+    padding: 14px;
+    position: static;
+  }
+
+  .ryeo-brand {
+    justify-content: flex-start;
+    border-bottom: 0;
+    padding-bottom: 10px;
+  }
+
+  .ryeo-brand__sub {
+    display: block;
+  }
+
+  .ryeo-nav {
+    grid-template-columns: repeat(4, 1fr);
+    overflow-x: auto;
+    margin-top: 8px;
+  }
+
+  .ryeo-nav button,
+  .ryeo-nav button:not(.is-active) {
+    justify-content: center;
+    font-size: 0;
+    padding: 10px 6px;
+  }
+
+  .ryeo-nav button span {
+    font-size: 10px;
+  }
+
+  .ryeo-workspace {
+    height: auto;
+    overflow: visible;
+  }
+
+  .ryeo-topbar {
+    position: static;
+    display: block;
+    padding: 16px;
+  }
+
+  .ryeo-topbar__status {
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .ryeo-topbar__status > div {
+    min-width: auto;
+  }
+
+  .ryeo-content {
+    padding: 16px;
+  }
+
+  .ryeo-metrics,
+  .ryeo-office-grid,
+  .ryeo-class-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ryeo-alert {
+    display: block;
+  }
+
+  .ryeo-alert p {
+    margin-top: 8px;
+  }
+
+  .ryeo-section-title {
+    align-items: flex-start;
+    display: block;
+  }
+
+  .ryeo-search {
+    margin-top: 12px;
+  }
+
+  .ryeo-search input {
+    width: 100%;
+  }
+
+  .ryeo-keeper {
+    grid-template-columns: 1fr;
+  }
+}

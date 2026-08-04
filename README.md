@@ -1,2 +1,20 @@
-# ryeo-archive
-Fictional public archive website project
+# 생활환경기록보존원 1차 사이트
+
+정적 사이트 파일입니다.
+
+## 파일 구성
+- `index.html` : 메인 페이지
+- `styles.css` : 스타일
+- `script.js` : 인터랙션 및 숨은 려 모드 전환
+- `assets/logo-icon.svg` : 로고 아이콘
+
+## 숨은 려 모드 진입 순서
+1. 상단 메뉴 `기관소개` 클릭
+2. 연혁의 `1912 기록 이관 자료 확인` 클릭
+3. 메인 우측 패널의 `:|` 클릭
+4. 검색창에 `1912` 입력 후 검색
+
+## 배포 방법
+1. GitHub 저장소에서 `Add file` > `Upload files`
+2. 이 폴더 안의 파일들을 업로드
+3. Cloudflare Pages에서 해당 저장소 연결

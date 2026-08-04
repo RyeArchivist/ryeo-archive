@@ -105,24 +105,24 @@ function beginRyeoTransition() {
   window.setTimeout(() => {
     activateRyeoMode();
     document.body.classList.add('ryeo-entering');
-  }, 3350);
+  }, 4100);
 
   window.setTimeout(() => {
     transition?.classList.remove('is-active');
     transition?.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('access-transitioning');
     ryeoTransitionRunning = false;
-  }, 3950);
+  }, 4680);
 
   window.setTimeout(() => {
     document.body.classList.remove('ryeo-entering');
-  }, 4300);
+  }, 5050);
 }
 
 function activateRyeoMode() {
   ryeoActivated = true;
   document.body.classList.add('ryeo-mode');
-  document.title = '記錄網';
+  document.title = '慮 記錄網';
   ryeoPanel.hidden = false;
 
   const now = new Date();

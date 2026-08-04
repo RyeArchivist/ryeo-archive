@@ -1535,3 +1535,228 @@ body.ryeo-entering .ryeo-system {
     animation-delay: 0ms !important;
   }
 }
+
+
+/* v5: 내부 로고 축소 및 한 줄 고정 */
+.ryeo-brand {
+  gap: 10px;
+  padding: 0 6px 18px;
+}
+
+.ryeo-brand__logo {
+  width: 78px;
+  max-width: 78px;
+  max-height: 82px;
+  object-fit: contain;
+  flex: 0 0 78px;
+}
+
+.ryeo-brand__sub {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.ryeo-brand__sub strong {
+  display: block;
+  font-size: 14px;
+  letter-spacing: .025em;
+  white-space: nowrap;
+}
+
+.ryeo-brand__sub span {
+  display: block;
+  margin-top: 3px;
+  font-size: 7px;
+  letter-spacing: .12em;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+/* v5: 글리치 강화 */
+.access-transition__tear {
+  position: absolute;
+  left: -8%;
+  width: 116%;
+  height: 9%;
+  z-index: 3;
+  opacity: 0;
+  background: rgba(207,239,255,.10);
+  backdrop-filter: blur(1px) contrast(1.8);
+  mix-blend-mode: screen;
+}
+
+.access-transition__tear--1 { top: 17%; }
+.access-transition__tear--2 { top: 44%; }
+.access-transition__tear--3 { top: 73%; }
+
+.access-transition.is-active .access-transition__tear--1 {
+  animation: tearGlitchA .82s steps(2,end) .34s 4;
+}
+.access-transition.is-active .access-transition__tear--2 {
+  animation: tearGlitchB .68s steps(2,end) .72s 5;
+}
+.access-transition.is-active .access-transition__tear--3 {
+  animation: tearGlitchC .76s steps(2,end) 1.12s 4;
+}
+
+.access-transition__code {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  color: rgba(215,242,255,.055);
+  font-family: Consolas, monospace;
+  font-size: clamp(80px, 16vw, 210px);
+  font-weight: 800;
+  letter-spacing: .18em;
+  opacity: 0;
+  transform: scale(1);
+}
+
+.access-transition.is-active .access-transition__code {
+  animation: codeGhost 1.05s steps(2,end) 1.48s 2;
+}
+
+.access-transition.is-active .access-transition__noise {
+  animation: noisePulse .13s steps(2,end) infinite, noiseFade 4.55s linear forwards;
+}
+
+.access-transition.is-active .access-transition__scan {
+  animation: scanSweep 1.05s ease-in-out .58s 3;
+}
+
+.access-transition.is-active .access-transition__flash {
+  animation: hardFlash 4.55s steps(1,end) forwards;
+}
+
+body.access-transitioning > .top-banner,
+body.access-transitioning > .header,
+body.access-transitioning > .search-panel,
+body.access-transitioning > main,
+body.access-transitioning > .footer {
+  animation: pageGlitchHeavy 4.35s steps(1,end) forwards;
+  transform-origin: center;
+}
+
+body.access-transitioning::before,
+body.access-transitioning::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+
+body.access-transitioning::before {
+  background: rgba(255, 0, 72, .09);
+  transform: translateX(-5px);
+  animation: chromaRed 1.25s steps(2,end) .3s 3;
+}
+
+body.access-transitioning::after {
+  background: rgba(0, 218, 255, .09);
+  transform: translateX(5px);
+  animation: chromaCyan 1.25s steps(2,end) .4s 3;
+}
+
+@keyframes tearGlitchA {
+  0%,100% { opacity: 0; transform: translateX(0) scaleX(1); }
+  20% { opacity: .55; transform: translateX(28px) scaleX(1.02); }
+  42% { opacity: .10; transform: translateX(-34px) scaleX(.98); }
+  68% { opacity: .42; transform: translateX(13px) scaleX(1.01); }
+}
+
+@keyframes tearGlitchB {
+  0%,100% { opacity: 0; transform: translateX(0); }
+  30% { opacity: .48; transform: translateX(-38px); }
+  62% { opacity: .16; transform: translateX(31px); }
+}
+
+@keyframes tearGlitchC {
+  0%,100% { opacity: 0; transform: translateX(0); }
+  50% { opacity: .44; transform: translateX(42px); }
+}
+
+@keyframes codeGhost {
+  0%,100% { opacity: 0; transform: scale(1); }
+  16% { opacity: .55; transform: scale(1.025); }
+  19% { opacity: .06; transform: scale(.992); }
+  46% { opacity: .34; transform: scale(1.012); }
+  49% { opacity: 0; }
+}
+
+@keyframes noiseFade {
+  0% { opacity: 0; }
+  14% { opacity: .22; }
+  28% { opacity: .60; }
+  33% { opacity: .12; }
+  52% { opacity: .52; }
+  71% { opacity: .24; }
+  88% { opacity: .68; }
+  100% { opacity: .18; }
+}
+
+@keyframes hardFlash {
+  0%, 21%, 100% { opacity: 0; }
+  22% { opacity: .32; background: #fff; }
+  23% { opacity: 0; }
+  47% { opacity: .20; background: #4fc8ff; }
+  48% { opacity: 0; }
+  69% { opacity: .42; background: #fff; }
+  70% { opacity: .04; }
+  83% { opacity: .22; background: #ff315f; }
+  84% { opacity: 0; }
+}
+
+@keyframes pageGlitchHeavy {
+  0%, 7%, 100% { transform: translate(0,0); filter: none; }
+  8% { transform: translate(-3px,1px); }
+  9% { transform: translate(4px,-1px); }
+  10% { transform: translate(0,0); }
+  24% { transform: skewX(.35deg) translateX(-2px); filter: contrast(1.25); }
+  25% { transform: skewX(-.4deg) translateX(3px); }
+  26% { transform: none; }
+  42% { filter: grayscale(.65) contrast(1.45); }
+  44% { filter: invert(1) contrast(2.1); }
+  45% { filter: grayscale(.8) contrast(1.55); }
+  47% { filter: none; }
+  61% { transform: translateX(3px) scaleX(1.002); }
+  62% { transform: translateX(-4px) scaleX(.998); }
+  63% { transform: none; }
+  78% { filter: saturate(.05) contrast(1.7); }
+  80% { filter: invert(1) saturate(0) contrast(2.2); }
+  81% { filter: none; }
+  91% { transform: translateY(2px); opacity: .75; }
+  93% { transform: translateY(-1px); opacity: .92; }
+  100% { transform: none; opacity: 1; }
+}
+
+@keyframes chromaRed {
+  0%,100% { opacity: 0; }
+  18%,25% { opacity: .58; }
+  26% { opacity: .06; }
+  52%,58% { opacity: .42; }
+}
+
+@keyframes chromaCyan {
+  0%,100% { opacity: 0; }
+  15%,23% { opacity: .50; }
+  24% { opacity: .05; }
+  48%,55% { opacity: .38; }
+}
+
+@media (max-width: 1050px) {
+  .ryeo-brand__logo {
+    width: 54px;
+    max-width: 54px;
+    max-height: 58px;
+    flex-basis: 54px;
+  }
+
+  .ryeo-brand__sub {
+    display: none;
+  }
+}

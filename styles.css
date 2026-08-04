@@ -198,8 +198,81 @@ body.ryeo-mode .hero {
 .stat-box strong { display: block; font-size: 12px; opacity: .95; letter-spacing: .14em; text-transform: uppercase; }
 .stat-box span { display: block; margin-top: 6px; opacity: .9; }
 .stat-box b { display: block; margin-top: 8px; font-size: 28px; letter-spacing: -.03em; }
-.stat-box--hidden b {
-  font-size: 34px; letter-spacing: .2em; color: rgba(255,255,255,.82);
+.stat-box--hidden {
+  position: relative;
+  min-height: 92px;
+  overflow: hidden;
+}
+
+.stat-box--hidden > span {
+  display: block;
+  padding-right: 54px;
+}
+
+/* 려 표식 :| — 문자 대신 도형으로 구성 */
+.hidden-mark {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  width: 36px;
+  height: 38px;
+  padding: 0;
+
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  opacity: 0.24;
+
+  cursor: pointer;
+  user-select: none;
+
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.hidden-mark:hover {
+  opacity: 0.55;
+  transform: scale(1.04);
+}
+
+.hidden-mark:focus-visible {
+  opacity: 0.7;
+  outline: 1px solid rgba(255,255,255,.55);
+  outline-offset: 4px;
+}
+
+.hidden-mark__dots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  width: 6px;
+  height: 26px;
+}
+
+.hidden-mark__dots i {
+  display: block;
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+  background: rgba(255,255,255,.88);
+}
+
+.hidden-mark__bar {
+  display: block;
+  width: 2px;
+  height: 26px;
+
+  border-radius: 999px;
+  background: rgba(255,255,255,.88);
 }
 .quick-links {
   margin-top: -52px;

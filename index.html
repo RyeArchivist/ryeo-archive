@@ -99,20 +99,26 @@
             <b>362건</b>
           </div>
           <div class="stat-box stat-box--hidden">
-            <span>분류 외 문서</span>
-            <button
-              class="hidden-mark"
-              id="hiddenMark"
-              type="button"
-              aria-label="분류 외 기록 표식"
-              title="기록은 이름과 표식으로 시작하고 끝난다"
-            >
-              <span class="hidden-mark__dots" aria-hidden="true">
-                <i></i>
-                <i></i>
-              </span>
-              <span class="hidden-mark__bar" aria-hidden="true"></span>
-            </button>
+            <div class="hidden-record-line">
+              <span>분류 외 문서</span>
+              <button
+                class="hidden-mark"
+                id="hiddenMark"
+                type="button"
+                aria-label="분류 외 기록 표식"
+              >
+                <svg
+                  class="hidden-mark__svg"
+                  viewBox="0 0 18 26"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <circle cx="4" cy="8" r="2"></circle>
+                  <circle cx="4" cy="18" r="2"></circle>
+                  <rect x="11" y="3" width="2" height="20" rx="1"></rect>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>

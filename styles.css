@@ -2806,3 +2806,81 @@ body.ryeo-booted .ryeo-dashboard-grid .ryeo-module:nth-child(3) { animation-dela
 .ryeo-year-summary.is-locked p { margin:7px 0 0; color:#806f72; font-size:11px; }
 .ryeo-year-summary.is-locked b { color:#c99999; }
 @media(max-width:900px){.ryeo-record-controls{display:grid;width:100%;margin-top:14px}.ryeo-year-control{min-width:0}.ryeo-year-summary{align-items:flex-start}.year-summary-numbers{text-align:left}}
+
+
+/* =========================================================
+   v4: 모바일 비밀 진입 및 터치 조작성 수정
+   ========================================================= */
+.hidden-mark {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 760px) {
+  .hidden-record-line {
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .hidden-mark {
+    width: 44px;
+    height: 44px;
+    margin: -8px -8px -8px 0;
+  }
+
+  .hidden-mark__svg {
+    width: 17px;
+    height: 25px;
+  }
+
+  .mobile-menu__panel a {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    touch-action: manipulation;
+  }
+
+  .search-panel__inner input,
+  .search-panel__inner button {
+    min-height: 46px;
+  }
+
+  .access-transition {
+    min-height: 100dvh;
+  }
+}
+
+/* =========================================================
+   v5: 모바일 사건 기록 카드 보기
+   ========================================================= */
+@media (max-width: 700px) {
+  .ryeo-view[data-view="records"] .ryeo-table-wrap { overflow: visible; }
+  .ryeo-view[data-view="records"] .ryeo-table { min-width: 0; display: block; }
+  .ryeo-view[data-view="records"] .ryeo-table thead { display: none; }
+  .ryeo-view[data-view="records"] .ryeo-table tbody { display: grid; gap: 10px; }
+  .ryeo-view[data-view="records"] .ryeo-table tbody tr[data-record-id] {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 7px 12px;
+    padding: 15px;
+    border: 1px solid rgba(129,154,183,.13);
+    background: rgba(7,17,27,.64);
+    border-radius: 6px;
+  }
+  .ryeo-view[data-view="records"] .ryeo-table tbody tr[data-record-id] td {
+    display: block;
+    padding: 0;
+    border: 0;
+    font-size: 11px;
+  }
+  .ryeo-view[data-view="records"] .ryeo-table tbody tr[data-record-id] td:nth-child(1) { grid-column: 1 / -1; color:#7297b2; font-size:10px; letter-spacing:.08em; }
+  .ryeo-view[data-view="records"] .ryeo-table tbody tr[data-record-id] td:nth-child(2) { grid-column: 1 / -1; color:#d7e3ec; font-size:14px; line-height:1.45; }
+  .ryeo-view[data-view="records"] .ryeo-table tbody tr[data-record-id] td:nth-child(3),
+  .ryeo-view[data-view="records"] .ryeo-table tbody tr[data-record-id] td:nth-child(4),
+  .ryeo-view[data-view="records"] .ryeo-table tbody tr[data-record-id] td:nth-child(5) { color:#71879a; }
+  .ryeo-view[data-view="records"] .ryeo-table tbody tr[data-record-id] td:nth-child(6) { justify-self:end; grid-row:3 / span 2; grid-column:2; }
+  .record-loading-row { display: table-row !important; }
+  .record-loading-row td { display: table-cell !important; }
+  .ryeo-year-summary { display:grid; gap:14px; }
+  .year-summary-numbers strong { font-size:20px; }
+}

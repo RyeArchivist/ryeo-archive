@@ -293,7 +293,7 @@ function maybeOpenPopup() {
 }
 
 function runSearch() {
-  const value = searchInput.value.trim();
+  const value = searchInput.value.trim().replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
   if (!value) {
     searchResult.innerHTML = '<p>검색어를 입력해주세요.</p>';
     return;
@@ -343,6 +343,24 @@ document.querySelectorAll('.nav button').forEach(btn => {
   });
 });
 
+// 모바일 메뉴도 PC 상단 메뉴와 동일한 비밀 진입 순서를 사용한다.
+document.querySelectorAll('#mobileMenu a[href^="#"]').forEach((link) => {
+  link.addEventListener('click', (event) => {
+    const targetId = link.getAttribute('href').slice(1);
+    const target = document.getElementById(targetId);
+
+    if (target) {
+      event.preventDefault();
+      mobileMenu.hidden = true;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    if (targetId === 'intro') {
+      registerSequence('intro');
+    }
+  });
+});
+
 document.getElementById('secretYearBtn').addEventListener('click', () => {
   registerSequence('year1912');
   searchPanel.hidden = false;
@@ -350,7 +368,8 @@ document.getElementById('secretYearBtn').addEventListener('click', () => {
   searchResult.innerHTML = '<p>연혁 자료가 검색창으로 이관되었습니다. 숫자만 입력해 확인하십시오.</p>';
 });
 
-document.getElementById('hiddenMark').addEventListener('click', () => {
+document.getElementById('hiddenMark').addEventListener('click', (event) => {
+  event.preventDefault();
   registerSequence('mark');
   rollingNotice.textContent = '기록은 이름과 표식으로 시작하고 끝난다.';
 });

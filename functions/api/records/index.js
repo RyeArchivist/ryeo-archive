@@ -26,8 +26,8 @@ function requireAdmin(context) {
 export async function onRequestGet(context) {
   try {
     const url = new URL(context.request.url);
-    const query = clean(url.searchParams.get('q'), 100);
-    const limit = Math.min(Math.max(Number(url.searchParams.get('limit')) || 50, 1), 100);
+    const query = clean(url.searchParams.get('q'), 500);
+    const limit = Math.min(Math.max(Number(url.searchParams.get('limit')) || 50, 1), 500);
     let stmt;
     if (query) {
       const q = `%${query}%`;

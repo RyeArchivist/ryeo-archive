@@ -182,12 +182,12 @@ function startTransitionTyping() {
 
   const title = document.getElementById('transitionTypingTitle');
   if (title) {
-    typeTransitionText(title, title.dataset.text || '', 42, 0);
+    typeTransitionText(title, title.dataset.text || '', 18, 0);
   }
 
-  const schedule = [520, 1030, 1510, 1980, 2450];
+  const schedule = [180, 500, 820, 1140];
   document.querySelectorAll('[data-transition-line]').forEach((line, idx) => {
-    typeTransitionText(line, line.dataset.text || '', 26, schedule[idx] || (520 + idx * 470));
+    typeTransitionText(line, line.dataset.text || '', 12, schedule[idx] || (180 + idx * 320));
   });
 }
 
@@ -208,25 +208,25 @@ function beginRyeoTransition() {
   // 1단계: 慮 로고만 보여주기
   queueTransitionTimer(() => {
     transition?.classList.add('phase-emblem-out');
-  }, 1450);
+  }, 1280);
 
   // 2단계: 로고가 사라진 뒤 터미널 표시 + 타이핑 시작
   queueTransitionTimer(() => {
     transition?.classList.remove('phase-emblem', 'phase-emblem-out');
     transition?.classList.add('phase-terminal');
     startTransitionTyping();
-  }, 1760);
+  }, 1600);
 
   // 3단계: 모든 문구 완성 상태 유지
   queueTransitionTimer(() => {
     transition?.classList.add('phase-complete');
-  }, 4700);
+  }, 2900);
 
   // 4단계: 내부망 진입
   queueTransitionTimer(() => {
     activateRyeoMode();
     document.body.classList.add('ryeo-entering');
-  }, 5350);
+  }, 3800);
 
   queueTransitionTimer(() => {
     transition?.classList.remove('is-active', 'phase-emblem', 'phase-emblem-out', 'phase-terminal', 'phase-complete');
@@ -234,11 +234,11 @@ function beginRyeoTransition() {
     document.body.classList.remove('access-transitioning');
     ryeoTransitionRunning = false;
     resetTransitionTyping();
-  }, 6100);
+  }, 4450);
 
   queueTransitionTimer(() => {
     document.body.classList.remove('ryeo-entering');
-  }, 6500);
+  }, 4800);
 }
 
 function activateRyeoMode() {
@@ -263,6 +263,9 @@ function activateRyeoMode() {
     const t = new Date(now.getTime() - (logItems.length - index - 1) * 1000);
     time.textContent = t.toLocaleTimeString('ko-KR', { hour12: false });
   });
+
+  document.body.classList.add('ryeo-booted');
+  window.setTimeout(() => document.body.classList.remove('ryeo-booted'), 1200);
 
   requestAnimationFrame(() => {
     document.querySelector('.ryeo-workspace')?.scrollTo({ top: 0 });
@@ -419,7 +422,7 @@ document.getElementById('exitRyeoMode')?.addEventListener('click', () => {
   resetTransitionTyping();
   document.getElementById('accessTransition')?.classList.remove('is-active', 'phase-emblem', 'phase-emblem-out', 'phase-terminal', 'phase-complete');
   document.getElementById('accessTransition')?.setAttribute('aria-hidden', 'true');
-  document.body.classList.remove('ryeo-mode', 'ryeo-entering', 'access-transitioning');
+  document.body.classList.remove('ryeo-mode', 'ryeo-entering', 'access-transitioning', 'ryeo-booted');
   document.title = '생활환경기록보존원 | LEAF';
   ryeoPanel.hidden = true;
   clearInterval(window.ryeoClockTimer);

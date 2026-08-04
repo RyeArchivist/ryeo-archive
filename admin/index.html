@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>慮 記錄網 관리자</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <header class="admin-top">
+    <div><b>慮 記錄網</b><span>RECORD CONTROL TERMINAL</span></div>
+    <div class="admin-user" id="adminUser">인증 확인 중</div>
+  </header>
+  <main class="admin-layout">
+    <aside class="admin-list-panel">
+      <div class="panel-head"><h1>기록 관리</h1><button id="newBtn">＋ 새 기록</button></div>
+      <input id="filterInput" class="filter" placeholder="기록번호·제목 검색" />
+      <div id="recordList" class="record-list"><p class="loading">기록망 연결 중…</p></div>
+    </aside>
+    <section class="editor-panel">
+      <form id="recordForm">
+        <input type="hidden" id="recordId" />
+        <div class="editor-head">
+          <div><span>RECORD EDITOR</span><h2 id="editorTitle">새 사건 기록</h2></div>
+          <div class="editor-actions"><button type="button" id="deleteBtn" class="danger" hidden>삭제</button><button type="submit" class="primary">기록 저장</button></div>
+        </div>
+        <div id="message" class="message" hidden></div>
+        <div class="form-grid">
+          <label>기록번호<input id="recordNo" required placeholder="RY-2026-001" /></label>
+          <label>임시 명칭<input id="title" required /></label>
+          <label>지역<input id="region" value="미상" /></label>
+          <label>괴이 유형<input id="recordType" value="未分類" /></label>
+          <label>위험 분류<input id="riskLevel" value="평가 불가" /></label>
+          <label>진행 상태<input id="status" value="분석 중" /></label>
+          <label class="wide">담당 삼직<input id="assignedTo" placeholder="探-00 / 硏-00 / 護-00" /></label>
+          <label class="wide">목록 요약<textarea id="summary" rows="3"></textarea></label>
+          <label class="wide">기록 본문<textarea id="content" rows="15"></textarea></label>
+          <label class="publish"><input type="checkbox" id="published" /> 일반 열람자에게 공개</label>
+        </div>
+      </form>
+    </section>
+  </main>
+  <script src="admin.js"></script>
+</body>
+</html>

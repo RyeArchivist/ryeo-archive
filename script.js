@@ -431,3 +431,44 @@ document.getElementById('exitRyeoMode')?.addEventListener('click', () => {
   searchInput.value = '';
   searchResult.innerHTML = '';
 });
+
+
+// 실제 D1 기록 게시판
+const dynamicRecordState = { records: [] };
+function escapeRecordHtml(value) { return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+async function loadDynamicRyeoRecords() {
+  const tbody = document.querySelector('.ryeo-view[data-view="records"] .ryeo-table tbody');
+  const dashBody = document.querySelector('.ryeo-view[data-view="dashboard"] .ryeo-table tbody');
+  if (tbody) tbody.innerHTML = '<tr class="record-loading-row"><td colspan="6">기록망에서 자료를 불러오는 중…</td></tr>';
+  try {
+    const response = await fetch('/api/records?limit=100', { headers: { accept: 'application/json' } });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || '기록 목록 오류');
+    dynamicRecordState.records = data.records || [];
+    const rows = dynamicRecordState.records.map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.region)}</td><td>${escapeRecordHtml(r.assigned_to || '-')}</td><td>${escapeRecordHtml(r.record_type)}</td><td>${escapeRecordHtml(r.status)}</td></tr>`).join('');
+    if (tbody) tbody.innerHTML = rows || '<tr class="record-loading-row"><td colspan="6">공개된 사건 기록이 없습니다.</td></tr>';
+    if (dashBody) {
+      dashBody.innerHTML = dynamicRecordState.records.slice(0,4).map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.record_type)}</td><td><span class="tag tag--blue">${escapeRecordHtml(r.risk_level)}</span></td><td><span class="status-dot status-dot--green">${escapeRecordHtml(r.status)}</span></td></tr>`).join('') || '<tr class="record-loading-row"><td colspan="5">공개된 사건 기록이 없습니다.</td></tr>';
+    }
+    document.querySelectorAll('.ryeo-table tbody tr[data-record-id]').forEach(row => row.addEventListener('click', () => openDynamicRecord(row.dataset.recordId)));
+  } catch (error) {
+    const text = `<tr class="record-loading-row"><td colspan="6">${escapeRecordHtml(error.message)} — D1 연결 설정을 확인하십시오.</td></tr>`;
+    if (tbody) tbody.innerHTML = text;
+  }
+}
+async function openDynamicRecord(id) {
+  const modal = document.getElementById('recordModal');
+  modal.hidden = false; document.body.style.overflow = 'hidden';
+  document.getElementById('recordModalNo').textContent = 'RECORD ACCESS';
+  document.getElementById('recordModalTitle').textContent = '기록을 불러오는 중…';
+  document.getElementById('recordModalMeta').innerHTML = ''; document.getElementById('recordModalSummary').textContent = ''; document.getElementById('recordModalContent').textContent = '';
+  try {
+    const response = await fetch(`/api/records/${encodeURIComponent(id)}`); const data = await response.json(); if (!response.ok) throw new Error(data.error || '기록을 열 수 없습니다.'); const r=data.record;
+    document.getElementById('recordModalNo').textContent = r.record_no; document.getElementById('recordModalTitle').textContent = r.title;
+    document.getElementById('recordModalMeta').innerHTML = [r.region,r.record_type,r.risk_level,r.status,r.assigned_to].filter(Boolean).map(v=>`<span>${escapeRecordHtml(v)}</span>`).join('');
+    document.getElementById('recordModalSummary').textContent = r.summary || '요약 없음'; document.getElementById('recordModalContent').textContent = r.content || '공개된 본문이 없습니다.';
+  } catch(error) { document.getElementById('recordModalTitle').textContent='열람 실패'; document.getElementById('recordModalContent').textContent=error.message; }
+}
+document.querySelectorAll('[data-record-close]').forEach(el => el.addEventListener('click',()=>{document.getElementById('recordModal').hidden=true;document.body.style.overflow='';}));
+const originalActivateRyeoModeDynamic = activateRyeoMode;
+activateRyeoMode = function(){ originalActivateRyeoModeDynamic(); loadDynamicRyeoRecords(); };

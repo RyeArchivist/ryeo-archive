@@ -784,6 +784,17 @@
     </div>
   </aside>
 
+
+  <div class="record-modal" id="recordModal" hidden>
+    <div class="record-modal__backdrop" data-record-close></div>
+    <article class="record-modal__panel" role="dialog" aria-modal="true" aria-labelledby="recordModalTitle">
+      <button class="record-modal__close" type="button" data-record-close>×</button>
+      <header><span id="recordModalNo">RECORD</span><h2 id="recordModalTitle">기록 불러오는 중</h2></header>
+      <div class="record-modal__meta" id="recordModalMeta"></div>
+      <p class="record-modal__summary" id="recordModalSummary"></p>
+      <div class="record-modal__content" id="recordModalContent"></div>
+    </article>
+  </div>
   <script src="script.js"></script>
 </body>
 </html>

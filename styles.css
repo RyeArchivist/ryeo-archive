@@ -69,7 +69,7 @@ body.ryeo-mode .search-panel {
   min-height: 84px;
 }
 .brand { display: inline-flex; align-items: center; gap: 14px; }
-.brand__logo { width: 58px; height: 58px; }
+.brand__logo { width: 58px; height: 58px; object-fit: contain; }
 .brand__text strong {
   display: block;
   font-size: 23px;
@@ -472,7 +472,7 @@ body.ryeo-mode .hero__lead { color: rgba(242,247,255,.82); }
   .hero__inner { padding: 52px 0 60px; }
   .hero h1 { font-size: 34px; }
   .header__inner { min-height: 74px; }
-  .brand__logo { width: 48px; height: 48px; }
+  .brand__logo { width: 48px; height: 48px; object-fit: contain; }
   .brand__text strong { font-size: 18px; }
   .footer__grid, .footer__bottom, .top-banner__inner, .notice-strip__inner, .search-panel__inner { grid-template-columns: 1fr; display: grid; }
   .footer__bottom { align-items: start; }

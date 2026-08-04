@@ -6,7 +6,7 @@
 - `index.html` : 메인 페이지
 - `styles.css` : 스타일
 - `script.js` : 인터랙션 및 숨은 려 모드 전환
-- `assets/logo-icon.svg` : 로고 아이콘
+- `assets/logo-approved.png` : 승인된 잎+물결 로고
 
 ## 숨은 려 모드 진입 순서
 1. 상단 메뉴 `기관소개` 클릭

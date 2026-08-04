@@ -90,10 +90,110 @@ function registerSequence(action) {
 }
 
 let ryeoTransitionRunning = false;
+let transitionTimers = [];
+
+function queueTransitionTimer(callback, delay) {
+  const id = window.setTimeout(callback, delay);
+  transitionTimers.push(id);
+  return id;
+}
+
+function clearTransitionTimers() {
+  transitionTimers.forEach(id => window.clearTimeout(id));
+  transitionTimers = [];
+}
+
+function resetTransitionTyping() {
+  const title = document.getElementById('transitionTypingTitle');
+  if (title) {
+    title.textContent = '';
+    title.classList.remove('is-visible', 'is-typing', 'is-complete');
+  }
+
+  document.querySelectorAll('[data-transition-line]').forEach((line) => {
+    line.textContent = '';
+    line.classList.remove('is-visible', 'is-typing', 'is-complete');
+  });
+}
+
+const HANGUL_CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+function buildTypingFrames(text) {
+  const frames = [];
+  let committed = '';
+
+  for (const char of text) {
+    const code = char.charCodeAt(0);
+    const isHangulSyllable = code >= 0xAC00 && code <= 0xD7A3;
+
+    if (!isHangulSyllable) {
+      committed += char;
+      frames.push(committed);
+      continue;
+    }
+
+    const syllableIndex = code - 0xAC00;
+    const choIndex = Math.floor(syllableIndex / 588);
+    const jungIndex = Math.floor((syllableIndex % 588) / 28);
+    const jongIndex = syllableIndex % 28;
+
+    const cho = HANGUL_CHO[choIndex];
+    const lvChar = String.fromCharCode(0xAC00 + ((choIndex * 21) + jungIndex) * 28);
+    const fullChar = String.fromCharCode(0xAC00 + syllableIndex);
+
+    frames.push(committed + cho);
+    frames.push(committed + lvChar);
+
+    if (jongIndex > 0) {
+      frames.push(committed + fullChar);
+      committed += fullChar;
+    } else {
+      committed += lvChar;
+    }
+  }
+
+  return frames.filter((frame, idx, arr) => idx === 0 || frame !== arr[idx - 1]);
+}
+
+function typeTransitionText(element, text, speed, delay) {
+  if (!element) return;
+  queueTransitionTimer(() => {
+    element.classList.add('is-visible', 'is-typing');
+    const frames = buildTypingFrames(text);
+    let index = 0;
+
+    const tick = () => {
+      element.textContent = frames[index] || '';
+      index += 1;
+      if (index < frames.length) {
+        queueTransitionTimer(tick, speed);
+      } else {
+        element.classList.remove('is-typing');
+        element.classList.add('is-complete');
+      }
+    };
+
+    tick();
+  }, delay);
+}
+
+function startTransitionTyping() {
+  resetTransitionTyping();
+  const title = document.getElementById('transitionTypingTitle');
+  if (title) {
+    typeTransitionText(title, title.dataset.text || '', 88, 170);
+  }
+
+  const schedule = [760, 1350, 1910, 2470, 3060];
+  document.querySelectorAll('[data-transition-line]').forEach((line, idx) => {
+    typeTransitionText(line, line.dataset.text || '', 52, schedule[idx] || (780 + idx * 500));
+  });
+}
 
 function beginRyeoTransition() {
   if (ryeoActivated || ryeoTransitionRunning) return;
   ryeoTransitionRunning = true;
+  clearTransitionTimers();
 
   const transition = document.getElementById('accessTransition');
   document.body.classList.add('access-transitioning');
@@ -101,22 +201,24 @@ function beginRyeoTransition() {
   transition?.setAttribute('aria-hidden', 'false');
 
   if (searchInput) searchInput.blur();
+  startTransitionTyping();
 
-  window.setTimeout(() => {
+  queueTransitionTimer(() => {
     activateRyeoMode();
     document.body.classList.add('ryeo-entering');
-  }, 4100);
+  }, 4200);
 
-  window.setTimeout(() => {
+  queueTransitionTimer(() => {
     transition?.classList.remove('is-active');
     transition?.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('access-transitioning');
     ryeoTransitionRunning = false;
-  }, 4680);
-
-  window.setTimeout(() => {
-    document.body.classList.remove('ryeo-entering');
+    resetTransitionTyping();
   }, 5050);
+
+  queueTransitionTimer(() => {
+    document.body.classList.remove('ryeo-entering');
+  }, 5430);
 }
 
 function activateRyeoMode() {
@@ -293,6 +395,10 @@ document.querySelectorAll('[data-open-view]').forEach((button) => {
 
 document.getElementById('exitRyeoMode')?.addEventListener('click', () => {
   ryeoActivated = false;
+  clearTransitionTimers();
+  resetTransitionTyping();
+  document.getElementById('accessTransition')?.classList.remove('is-active');
+  document.getElementById('accessTransition')?.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('ryeo-mode', 'ryeo-entering', 'access-transitioning');
   document.title = '생활환경기록보존원 | LEAF';
   ryeoPanel.hidden = true;

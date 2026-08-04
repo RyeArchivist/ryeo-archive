@@ -122,7 +122,7 @@ function beginRyeoTransition() {
 function activateRyeoMode() {
   ryeoActivated = true;
   document.body.classList.add('ryeo-mode');
-  document.title = '慮 記錄網';
+  document.title = '記錄網';
   ryeoPanel.hidden = false;
 
   const now = new Date();

@@ -14,7 +14,7 @@ function clean(value, max = 10000) {
 
 const ALLOWED_TYPES = new Set(['現象', '個體', '物件', '傳染', '記錄', '未分類']);
 const ALLOWED_RISKS = new Set(['평가 불가', '접근 제한', '기록 오염', '인명 위험']);
-const ALLOWED_STATUSES = new Set(['관찰 중', '분석 중', '회수 대기', '회수 완료', '열람 금지', '회수 기록 없음']);
+const ALLOWED_STATUSES = new Set(['관찰 중', '분석 중', '회수 대기', '격리 유지', '회수 완료', '열람 금지', '회수 기록 없음']);
 
 function normalizeType(value) {
   const parts = clean(value, 100)

@@ -2884,3 +2884,5 @@ body.ryeo-booted .ryeo-dashboard-grid .ryeo-module:nth-child(3) { animation-dela
   .ryeo-year-summary { display:grid; gap:14px; }
   .year-summary-numbers strong { font-size:20px; }
 }
+
+.status-dot--violet::before { background:#9b82d1; box-shadow:0 0 9px rgba(155,130,209,.35); }

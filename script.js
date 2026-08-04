@@ -460,8 +460,22 @@ function riskTagClass(value) {
   return ({'기록 오염':'tag--orange','접근 제한':'tag--blue','인명 위험':'tag--red','평가 불가':'tag--gray'})[value] || 'tag--gray';
 }
 function statusDotClass(value) {
-  return ({'회수 완료':'status-dot--green','분석 중':'status-dot--yellow','회수 대기':'status-dot--orange','관찰 중':'status-dot--blue','열람 금지':'status-dot--red','회수 기록 없음':'status-dot--gray'})[value] || 'status-dot--gray';
+  return ({'회수 완료':'status-dot--green','분석 중':'status-dot--yellow','회수 대기':'status-dot--orange','관찰 중':'status-dot--blue','격리 유지':'status-dot--violet','열람 금지':'status-dot--red','회수 기록 없음':'status-dot--gray'})[value] || 'status-dot--gray';
 }
+function updateTriadStatusCounts(records) {
+  const publicRecords = Array.isArray(records) ? records : [];
+  const active = publicRecords.filter(record => ['관찰 중', '분석 중', '회수 대기'].includes(record.status)).length;
+  const unresolved = publicRecords.filter(record => record.status === '회수 기록 없음').length;
+  const containment = publicRecords.filter(record => record.status === '격리 유지').length;
+
+  const activeEl = document.getElementById('triadActiveCount');
+  const unresolvedEl = document.getElementById('triadUnresolvedCount');
+  const containmentEl = document.getElementById('triadContainmentCount');
+  if (activeEl) activeEl.textContent = `활성 보고 ${active}건`;
+  if (unresolvedEl) unresolvedEl.textContent = `미해명 ${unresolved}건`;
+  if (containmentEl) containmentEl.textContent = `격리 유지 ${containment}건`;
+}
+
 function recordYear(record) {
   const match = String(record?.record_no || '').match(/RY-(\d{4})-/i);
   return match ? Number(match[1]) : null;
@@ -537,6 +551,7 @@ async function loadDynamicRyeoRecords() {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || '기록 목록 오류');
     dynamicRecordState.records = data.records || [];
+    updateTriadStatusCounts(dynamicRecordState.records);
     renderPublicRecordDirectory();
     if (dashBody) {
       dashBody.innerHTML = dynamicRecordState.records.slice(0,4).map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.record_type)}</td><td><span class="tag ${riskTagClass(r.risk_level)}">${escapeRecordHtml(r.risk_level)}</span></td><td><span class="status-dot ${statusDotClass(r.status)}">${escapeRecordHtml(r.status)}</span></td></tr>`).join('') || '<tr class="record-loading-row"><td colspan="5">공개된 사건 기록이 없습니다.</td></tr>';

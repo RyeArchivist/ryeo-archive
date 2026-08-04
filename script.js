@@ -433,46 +433,98 @@ document.getElementById('exitRyeoMode')?.addEventListener('click', () => {
 });
 
 
-// 실제 D1 기록 게시판
-const dynamicRecordState = { records: [] };
+// 실제 D1 기록 게시판 + 연도별 색인
+const dynamicRecordState = { records: [], selectedYear: 'all', search: '' };
+const ARCHIVE_INDEX = window.RYEO_ARCHIVE_INDEX || { startYear: 1912, currentYear: 2026, pre1912:{total:1473}, counts:{} };
 function escapeRecordHtml(value) { return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 function riskTagClass(value) {
-  return ({
-    '기록 오염': 'tag--orange',
-    '접근 제한': 'tag--blue',
-    '인명 위험': 'tag--red',
-    '평가 불가': 'tag--gray',
-  })[value] || 'tag--gray';
+  return ({'기록 오염':'tag--orange','접근 제한':'tag--blue','인명 위험':'tag--red','평가 불가':'tag--gray'})[value] || 'tag--gray';
 }
 function statusDotClass(value) {
-  return ({
-    '회수 완료': 'status-dot--green',
-    '분석 중': 'status-dot--yellow',
-    '회수 대기': 'status-dot--orange',
-    '관찰 중': 'status-dot--blue',
-    '열람 금지': 'status-dot--red',
-    '회수 기록 없음': 'status-dot--gray',
-  })[value] || 'status-dot--gray';
+  return ({'회수 완료':'status-dot--green','분석 중':'status-dot--yellow','회수 대기':'status-dot--orange','관찰 중':'status-dot--blue','열람 금지':'status-dot--red','회수 기록 없음':'status-dot--gray'})[value] || 'status-dot--gray';
 }
-
+function recordYear(record) {
+  const match = String(record?.record_no || '').match(/RY-(\d{4})-/i);
+  return match ? Number(match[1]) : null;
+}
+function archiveCount(year) { return Number(ARCHIVE_INDEX.counts?.[String(year)] || 0); }
+function buildYearOptions(select) {
+  if (!select) return;
+  const options = ['<option value="all">전체 연도</option>'];
+  for (let year = ARCHIVE_INDEX.currentYear; year >= ARCHIVE_INDEX.startYear; year -= 1) {
+    options.push(`<option value="${year}">${year}년 · 색인 ${archiveCount(year)}건</option>`);
+  }
+  options.push(`<option value="pre1912">1912년 이전 · 열람 금지 · ${ARCHIVE_INDEX.pre1912.total.toLocaleString()}건</option>`);
+  select.innerHTML = options.join('');
+}
+function filteredPublicRecords() {
+  const query = dynamicRecordState.search.trim().toLowerCase();
+  return dynamicRecordState.records.filter(record => {
+    const year = recordYear(record);
+    const yearMatch = dynamicRecordState.selectedYear === 'all' || (dynamicRecordState.selectedYear !== 'pre1912' && year === Number(dynamicRecordState.selectedYear));
+    const queryMatch = !query || `${record.record_no} ${record.title} ${record.region} ${record.record_type}`.toLowerCase().includes(query);
+    return yearMatch && queryMatch;
+  });
+}
+function updatePublicYearSummary() {
+  const box = document.getElementById('publicYearSummary');
+  if (!box) return;
+  const selected = dynamicRecordState.selectedYear;
+  if (selected === 'pre1912') {
+    const p = ARCHIVE_INDEX.pre1912;
+    box.className = 'ryeo-year-summary is-locked';
+    box.innerHTML = `<div class="year-lock-mark">封</div><div><span>PRE-1912 ARCHIVE</span><h3>1912년 이전 기록은 현 계통에서 열람할 수 없습니다.</h3><p>통합 색인 <b>${p.total.toLocaleString()}건</b> · 원본 소재 확인 ${p.originalLocated}건 · 부분 소실 ${p.partialLoss}건 · 보관 위치 미확인 ${p.locationUnknown}건 · 기록관 제한 ${p.keeperRestricted}건</p></div>`;
+    return;
+  }
+  const actual = filteredPublicRecords().length;
+  const count = selected === 'all' ? ARCHIVE_INDEX.accessibleTotal : archiveCount(Number(selected));
+  const title = selected === 'all' ? '1912–2026 통합 색인' : `${selected}년 기록 색인`;
+  box.className = 'ryeo-year-summary';
+  box.innerHTML = `<div><span>ARCHIVE INDEX</span><h3>${title}</h3></div><div class="year-summary-numbers"><strong>${Number(count).toLocaleString()}건</strong><small>현재 공개 열람 ${actual}건</small></div>`;
+}
+function renderPublicRecordDirectory() {
+  const tbody = document.querySelector('.ryeo-view[data-view="records"] .ryeo-table tbody');
+  if (!tbody) return;
+  if (dynamicRecordState.selectedYear === 'pre1912') {
+    tbody.innerHTML = '<tr class="record-loading-row"><td colspan="6">1912년 이전 기록은 기록관 승인 없이 열람할 수 없습니다.</td></tr>';
+    updatePublicYearSummary();
+    return;
+  }
+  const records = filteredPublicRecords();
+  tbody.innerHTML = records.map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.region)}</td><td>${escapeRecordHtml(r.assigned_to || '-')}</td><td>${escapeRecordHtml(r.record_type)}</td><td><span class="status-dot ${statusDotClass(r.status)}">${escapeRecordHtml(r.status)}</span></td></tr>`).join('') || '<tr class="record-loading-row"><td colspan="6">해당 연도에는 현재 공개된 상세 기록이 없습니다. 색인 정보만 보존되어 있습니다.</td></tr>';
+  tbody.querySelectorAll('tr[data-record-id]').forEach(row => row.addEventListener('click', () => openDynamicRecord(row.dataset.recordId)));
+  updatePublicYearSummary();
+}
+function bindPublicArchiveControls() {
+  const yearSelect = document.getElementById('publicRecordYear');
+  const search = document.getElementById('publicRecordSearch');
+  const button = document.getElementById('publicRecordSearchBtn');
+  buildYearOptions(yearSelect);
+  if (yearSelect && !yearSelect.dataset.bound) {
+    yearSelect.dataset.bound = '1';
+    yearSelect.addEventListener('change', () => { dynamicRecordState.selectedYear = yearSelect.value; renderPublicRecordDirectory(); });
+  }
+  const runSearch = () => { dynamicRecordState.search = search?.value || ''; renderPublicRecordDirectory(); };
+  if (button && !button.dataset.bound) { button.dataset.bound='1'; button.addEventListener('click', runSearch); }
+  if (search && !search.dataset.bound) { search.dataset.bound='1'; search.addEventListener('keydown', event => { if (event.key === 'Enter') runSearch(); }); }
+}
 async function loadDynamicRyeoRecords() {
   const tbody = document.querySelector('.ryeo-view[data-view="records"] .ryeo-table tbody');
   const dashBody = document.querySelector('.ryeo-view[data-view="dashboard"] .ryeo-table tbody');
+  bindPublicArchiveControls();
   if (tbody) tbody.innerHTML = '<tr class="record-loading-row"><td colspan="6">기록망에서 자료를 불러오는 중…</td></tr>';
   try {
-    const response = await fetch('/api/records?limit=100', { headers: { accept: 'application/json' } });
+    const response = await fetch('/api/records?limit=500', { headers: { accept: 'application/json' } });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || '기록 목록 오류');
     dynamicRecordState.records = data.records || [];
-    const rows = dynamicRecordState.records.map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.region)}</td><td>${escapeRecordHtml(r.assigned_to || '-')}</td><td>${escapeRecordHtml(r.record_type)}</td><td><span class="status-dot ${statusDotClass(r.status)}">${escapeRecordHtml(r.status)}</span></td></tr>`).join('');
-    if (tbody) tbody.innerHTML = rows || '<tr class="record-loading-row"><td colspan="6">공개된 사건 기록이 없습니다.</td></tr>';
+    renderPublicRecordDirectory();
     if (dashBody) {
       dashBody.innerHTML = dynamicRecordState.records.slice(0,4).map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.record_type)}</td><td><span class="tag ${riskTagClass(r.risk_level)}">${escapeRecordHtml(r.risk_level)}</span></td><td><span class="status-dot ${statusDotClass(r.status)}">${escapeRecordHtml(r.status)}</span></td></tr>`).join('') || '<tr class="record-loading-row"><td colspan="5">공개된 사건 기록이 없습니다.</td></tr>';
+      dashBody.querySelectorAll('tr[data-record-id]').forEach(row => row.addEventListener('click', () => openDynamicRecord(row.dataset.recordId)));
     }
-    document.querySelectorAll('.ryeo-table tbody tr[data-record-id]').forEach(row => row.addEventListener('click', () => openDynamicRecord(row.dataset.recordId)));
   } catch (error) {
-    const text = `<tr class="record-loading-row"><td colspan="6">${escapeRecordHtml(error.message)} — D1 연결 설정을 확인하십시오.</td></tr>`;
-    if (tbody) tbody.innerHTML = text;
+    if (tbody) tbody.innerHTML = `<tr class="record-loading-row"><td colspan="6">${escapeRecordHtml(error.message)} — D1 연결 설정을 확인하십시오.</td></tr>`;
   }
 }
 async function openDynamicRecord(id) {

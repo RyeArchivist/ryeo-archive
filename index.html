@@ -594,11 +594,19 @@
                 <span>RECORD DIRECTORY</span>
                 <h2>사건 기록</h2>
               </div>
-              <div class="ryeo-search">
-                <input type="text" placeholder="기록번호 또는 임시 명칭 검색" />
-                <button type="button">조회</button>
+              <div class="ryeo-record-controls">
+                <label class="ryeo-year-control">
+                  <span>기록 연도</span>
+                  <select id="publicRecordYear"></select>
+                </label>
+                <div class="ryeo-search">
+                  <input id="publicRecordSearch" type="text" placeholder="기록번호 또는 임시 명칭 검색" />
+                  <button id="publicRecordSearchBtn" type="button">조회</button>
+                </div>
               </div>
             </div>
+
+            <div class="ryeo-year-summary" id="publicYearSummary"></div>
 
             <div class="ryeo-module">
               <div class="ryeo-table-wrap">
@@ -795,6 +803,7 @@
       <div class="record-modal__content" id="recordModalContent"></div>
     </article>
   </div>
+  <script src="archive-data.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

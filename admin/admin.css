@@ -68,3 +68,20 @@
   accent-color:#66a9d8;
 }
 @media(max-width:1100px){.type-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* 연도별 관리자 기록함 */
+.archive-filter-block { margin:12px 0 4px; }
+.archive-filter-block > label { display:grid; gap:7px; color:#8fa3b6; font-size:11px; }
+.year-filter { width:100%; padding:12px; border:1px solid var(--line); border-radius:7px; background:#08131f; color:var(--text); }
+.year-archive-meta { margin-top:9px; padding:11px 12px; border:1px solid #203246; border-radius:7px; background:linear-gradient(90deg,#0d1c2a,#0a1520); }
+.year-archive-meta b,.year-archive-meta span,.year-archive-meta small { display:block; }
+.year-archive-meta b { color:#cfe3f2; font-size:12px; }
+.year-archive-meta span { margin-top:4px; color:#7890a4; font-size:10px; }
+.year-archive-meta small { margin-top:5px; color:#526a7f; font-size:9px; line-height:1.45; }
+.year-archive-meta.locked { border-color:#55343b; background:linear-gradient(90deg,#24151a,#10131a); }
+.year-archive-meta.locked b { color:#d49b9b; }
+.pre1912-admin-lock { display:grid; gap:8px; padding:24px 16px; border:1px solid #55343b; border-radius:8px; background:#171116; text-align:center; }
+.pre1912-admin-lock strong { width:48px; height:48px; display:grid; place-items:center; margin:0 auto; border:1px solid #75454e; color:#c18484; font-family:Batang,serif; font-size:21px; }
+.pre1912-admin-lock b { color:#d7b1b1; font-size:12px; }
+.pre1912-admin-lock span { color:#745f64; font-size:10px; line-height:1.55; }

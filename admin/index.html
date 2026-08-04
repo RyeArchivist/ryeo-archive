@@ -14,6 +14,12 @@
   <main class="admin-layout">
     <aside class="admin-list-panel">
       <div class="panel-head"><h1>기록 관리</h1><button id="newBtn">＋ 새 기록</button></div>
+      <div class="archive-filter-block">
+        <label>기록 연도
+          <select id="yearFilter" class="year-filter"></select>
+        </label>
+        <div id="yearArchiveMeta" class="year-archive-meta"></div>
+      </div>
       <input id="filterInput" class="filter" placeholder="기록번호·제목 검색" />
       <div id="recordList" class="record-list"><p class="loading">기록망 연결 중…</p></div>
     </aside>
@@ -66,6 +72,7 @@
       </form>
     </section>
   </main>
+  <script src="../archive-data.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>

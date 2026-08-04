@@ -83,10 +83,40 @@ function registerSequence(action) {
   if (ryeoActivated) return;
   if (action === triggerSequence[triggerStep]) {
     triggerStep += 1;
-    if (triggerStep === triggerSequence.length) activateRyeoMode();
+    if (triggerStep === triggerSequence.length) beginRyeoTransition();
   } else {
     triggerStep = action === triggerSequence[0] ? 1 : 0;
   }
+}
+
+let ryeoTransitionRunning = false;
+
+function beginRyeoTransition() {
+  if (ryeoActivated || ryeoTransitionRunning) return;
+  ryeoTransitionRunning = true;
+
+  const transition = document.getElementById('accessTransition');
+  document.body.classList.add('access-transitioning');
+  transition?.classList.add('is-active');
+  transition?.setAttribute('aria-hidden', 'false');
+
+  if (searchInput) searchInput.blur();
+
+  window.setTimeout(() => {
+    activateRyeoMode();
+    document.body.classList.add('ryeo-entering');
+  }, 3350);
+
+  window.setTimeout(() => {
+    transition?.classList.remove('is-active');
+    transition?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('access-transitioning');
+    ryeoTransitionRunning = false;
+  }, 3950);
+
+  window.setTimeout(() => {
+    document.body.classList.remove('ryeo-entering');
+  }, 4300);
 }
 
 function activateRyeoMode() {
@@ -145,8 +175,8 @@ function runSearch() {
   }
 
   if (value === '1912') {
+    searchResult.innerHTML = '<p class="search-anomaly"><strong>검색 결과 1건</strong><br />AR-1912-000 / 제목 없음 / 상태: 비공개</p>';
     registerSequence('search1912');
-    searchResult.innerHTML = '<p><strong>검색 결과 1건</strong><br />AR-1912-000 / 제목 없음 / 상태: 비공개</p>';
   } else if (value.toLowerCase() === ':|') {
     searchResult.innerHTML = '<p>기록은 이름과 표식으로 시작하고 끝난다.</p>';
   } else {
@@ -263,7 +293,7 @@ document.querySelectorAll('[data-open-view]').forEach((button) => {
 
 document.getElementById('exitRyeoMode')?.addEventListener('click', () => {
   ryeoActivated = false;
-  document.body.classList.remove('ryeo-mode');
+  document.body.classList.remove('ryeo-mode', 'ryeo-entering', 'access-transitioning');
   document.title = '생활환경기록보존원 | LEAF';
   ryeoPanel.hidden = true;
   clearInterval(window.ryeoClockTimer);

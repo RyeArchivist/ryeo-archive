@@ -1299,3 +1299,239 @@ body.ryeo-mode > main {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =========================================================
+   1912 접근 전환 연출
+   ========================================================= */
+
+.access-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  overflow: hidden;
+  background: rgba(3, 7, 12, 0);
+  pointer-events: none;
+}
+
+.access-transition.is-active {
+  display: block;
+  pointer-events: all;
+  animation: accessBackdrop 3.85s both;
+}
+
+.access-transition__noise,
+.access-transition__scan,
+.access-transition__flash {
+  position: absolute;
+  inset: 0;
+}
+
+.access-transition__noise {
+  opacity: 0;
+  background-image:
+    repeating-radial-gradient(circle at 17% 23%, rgba(255,255,255,.08) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px);
+  background-size: 7px 7px, 100% 4px;
+  mix-blend-mode: screen;
+}
+
+.access-transition.is-active .access-transition__noise {
+  animation: noiseRise 3.2s both steps(2, end);
+}
+
+.access-transition__scan {
+  top: -18%;
+  bottom: auto;
+  height: 14%;
+  opacity: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(131, 183, 215, .04),
+    rgba(206, 232, 247, .22),
+    rgba(96, 160, 198, .04),
+    transparent
+  );
+  filter: blur(1px);
+}
+
+.access-transition.is-active .access-transition__scan {
+  animation: scanDrop 2.25s .3s ease-in-out both;
+}
+
+.access-transition__flash {
+  background: #dcecf4;
+  opacity: 0;
+}
+
+.access-transition.is-active .access-transition__flash {
+  animation: accessFlash 3.7s both;
+}
+
+.access-transition__terminal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(560px, calc(100vw - 40px));
+  transform: translate(-50%, -46%);
+  opacity: 0;
+  color: #c8d8e3;
+  font-family: "Courier New", "Malgun Gothic", monospace;
+}
+
+.access-transition.is-active .access-transition__terminal {
+  animation: terminalAppear 3.5s .42s both;
+}
+
+.access-transition__symbol {
+  margin-bottom: 24px;
+  color: #dceaf2;
+  font-size: 36px;
+  letter-spacing: .12em;
+  opacity: .76;
+}
+
+.access-transition__lines {
+  min-height: 150px;
+  border-left: 1px solid rgba(135, 174, 199, .26);
+  padding-left: 18px;
+}
+
+.access-transition__lines p {
+  margin: 0 0 9px;
+  color: #7991a2;
+  font-size: 13px;
+  letter-spacing: .02em;
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.access-transition__lines p:first-child {
+  color: #d0e0ea;
+  font-size: 11px;
+  letter-spacing: .16em;
+  margin-bottom: 19px;
+}
+
+.access-transition.is-active [data-transition-line="1"] { animation: lineReveal .16s .55s forwards; }
+.access-transition.is-active [data-transition-line="2"] { animation: lineReveal .16s 1.02s forwards; }
+.access-transition.is-active [data-transition-line="3"] { animation: lineReveal .16s 1.55s forwards; color: #b88973; }
+.access-transition.is-active [data-transition-line="4"] { animation: lineReveal .16s 2.15s forwards; color: #adc4d2; }
+.access-transition.is-active [data-transition-line="5"] { animation: lineReveal .16s 2.72s forwards; color: #e0ebf1; }
+
+.access-transition__progress {
+  height: 1px;
+  margin-top: 20px;
+  background: rgba(124, 157, 179, .12);
+  overflow: hidden;
+}
+
+.access-transition__progress i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: #a8c3d4;
+  box-shadow: 0 0 10px rgba(168,195,212,.32);
+}
+
+.access-transition.is-active .access-transition__progress i {
+  animation: accessProgress 2.7s .65s cubic-bezier(.18,.75,.24,1) forwards;
+}
+
+body.access-transitioning > .top-banner,
+body.access-transitioning > .header,
+body.access-transitioning > .search-panel,
+body.access-transitioning > main,
+body.access-transitioning > .footer {
+  animation: publicSiteCorrupt 2.35s .12s both;
+  transform-origin: center center;
+}
+
+@keyframes accessBackdrop {
+  0% { background: rgba(3,7,12,0); backdrop-filter: blur(0); }
+  15% { background: rgba(4,9,15,.15); }
+  34% { background: rgba(4,9,15,.58); backdrop-filter: blur(1px); }
+  55%, 100% { background: #050a10; backdrop-filter: blur(0); }
+}
+
+@keyframes publicSiteCorrupt {
+  0% { opacity: 1; filter: none; transform: translate(0,0) scale(1); }
+  8% { transform: translate(-1px,0); }
+  10% { transform: translate(2px,1px); filter: contrast(1.04); }
+  12% { transform: translate(0,0); }
+  23% { opacity: .95; filter: saturate(.72) contrast(1.06); }
+  38% { transform: translateX(-2px) skewX(.08deg); }
+  40% { transform: translateX(2px) skewX(-.08deg); }
+  43% { transform: translateX(0); }
+  62% { opacity: .58; filter: grayscale(.65) contrast(1.15) brightness(.75); }
+  82%, 100% { opacity: 0; filter: grayscale(1) contrast(1.3) brightness(.25); }
+}
+
+@keyframes noiseRise {
+  0%, 10% { opacity: 0; transform: translate(0,0); }
+  18% { opacity: .14; transform: translate(-2px,1px); }
+  25% { opacity: .04; transform: translate(2px,-1px); }
+  37% { opacity: .22; transform: translate(-1px,2px); }
+  49% { opacity: .08; }
+  61% { opacity: .25; transform: translate(3px,0); }
+  75%, 100% { opacity: .07; transform: translate(0,0); }
+}
+
+@keyframes scanDrop {
+  0% { top: -18%; opacity: 0; }
+  10% { opacity: .7; }
+  82% { opacity: .42; }
+  100% { top: 110%; opacity: 0; }
+}
+
+@keyframes accessFlash {
+  0%, 25% { opacity: 0; }
+  26% { opacity: .1; }
+  27.2% { opacity: 0; }
+  58% { opacity: 0; }
+  59% { opacity: .06; }
+  60% { opacity: 0; }
+  88% { opacity: 0; }
+  89% { opacity: .16; }
+  91%, 100% { opacity: 0; }
+}
+
+@keyframes terminalAppear {
+  0%, 7% { opacity: 0; transform: translate(-50%, -43%); }
+  16%, 82% { opacity: 1; transform: translate(-50%, -50%); }
+  92%, 100% { opacity: 0; transform: translate(-50%, -52%); }
+}
+
+@keyframes lineReveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes accessProgress {
+  0% { width: 0; }
+  28% { width: 21%; }
+  41% { width: 46%; }
+  67% { width: 74%; }
+  84% { width: 91%; }
+  100% { width: 100%; }
+}
+
+body.ryeo-entering .ryeo-system {
+  animation: ryeoSystemEnter .75s cubic-bezier(.2,.78,.25,1) both;
+}
+
+@keyframes ryeoSystemEnter {
+  0% { opacity: 0; filter: brightness(.45) blur(2px); transform: scale(1.006); }
+  35% { opacity: .42; filter: brightness(.72) blur(1px); }
+  100% { opacity: 1; filter: none; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .access-transition.is-active,
+  .access-transition.is-active *,
+  body.access-transitioning > * {
+    animation-duration: .01ms !important;
+    animation-delay: 0ms !important;
+  }
+}

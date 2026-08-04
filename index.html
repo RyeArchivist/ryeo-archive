@@ -9,6 +9,23 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
+  <div class="access-transition" id="accessTransition" aria-hidden="true">
+    <div class="access-transition__noise"></div>
+    <div class="access-transition__scan"></div>
+    <div class="access-transition__flash"></div>
+    <div class="access-transition__terminal">
+      <div class="access-transition__symbol">:|</div>
+      <div class="access-transition__lines" aria-live="polite">
+        <p data-transition-line="1">ARCHIVE INDEX / 1912</p>
+        <p data-transition-line="2">비공개 기록 계통을 대조하고 있습니다.</p>
+        <p data-transition-line="3">표면망 인증 정보 불일치.</p>
+        <p data-transition-line="4">기록 계통 확인.</p>
+        <p data-transition-line="5">제한 열람을 시작합니다.</p>
+      </div>
+      <div class="access-transition__progress"><i></i></div>
+    </div>
+  </div>
   <div class="site-popup" id="sitePopup" aria-hidden="true">
     <div class="site-popup__backdrop" data-close-popup></div>
     <div class="site-popup__panel" role="dialog" aria-modal="true" aria-labelledby="popupTitle">

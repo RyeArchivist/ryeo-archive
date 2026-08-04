@@ -436,6 +436,25 @@ document.getElementById('exitRyeoMode')?.addEventListener('click', () => {
 // 실제 D1 기록 게시판
 const dynamicRecordState = { records: [] };
 function escapeRecordHtml(value) { return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+function riskTagClass(value) {
+  return ({
+    '기록 오염': 'tag--orange',
+    '접근 제한': 'tag--blue',
+    '인명 위험': 'tag--red',
+    '평가 불가': 'tag--gray',
+  })[value] || 'tag--gray';
+}
+function statusDotClass(value) {
+  return ({
+    '회수 완료': 'status-dot--green',
+    '분석 중': 'status-dot--yellow',
+    '회수 대기': 'status-dot--orange',
+    '관찰 중': 'status-dot--blue',
+    '열람 금지': 'status-dot--red',
+    '회수 기록 없음': 'status-dot--gray',
+  })[value] || 'status-dot--gray';
+}
+
 async function loadDynamicRyeoRecords() {
   const tbody = document.querySelector('.ryeo-view[data-view="records"] .ryeo-table tbody');
   const dashBody = document.querySelector('.ryeo-view[data-view="dashboard"] .ryeo-table tbody');
@@ -445,10 +464,10 @@ async function loadDynamicRyeoRecords() {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || '기록 목록 오류');
     dynamicRecordState.records = data.records || [];
-    const rows = dynamicRecordState.records.map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.region)}</td><td>${escapeRecordHtml(r.assigned_to || '-')}</td><td>${escapeRecordHtml(r.record_type)}</td><td>${escapeRecordHtml(r.status)}</td></tr>`).join('');
+    const rows = dynamicRecordState.records.map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.region)}</td><td>${escapeRecordHtml(r.assigned_to || '-')}</td><td>${escapeRecordHtml(r.record_type)}</td><td><span class="status-dot ${statusDotClass(r.status)}">${escapeRecordHtml(r.status)}</span></td></tr>`).join('');
     if (tbody) tbody.innerHTML = rows || '<tr class="record-loading-row"><td colspan="6">공개된 사건 기록이 없습니다.</td></tr>';
     if (dashBody) {
-      dashBody.innerHTML = dynamicRecordState.records.slice(0,4).map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.record_type)}</td><td><span class="tag tag--blue">${escapeRecordHtml(r.risk_level)}</span></td><td><span class="status-dot status-dot--green">${escapeRecordHtml(r.status)}</span></td></tr>`).join('') || '<tr class="record-loading-row"><td colspan="5">공개된 사건 기록이 없습니다.</td></tr>';
+      dashBody.innerHTML = dynamicRecordState.records.slice(0,4).map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.record_type)}</td><td><span class="tag ${riskTagClass(r.risk_level)}">${escapeRecordHtml(r.risk_level)}</span></td><td><span class="status-dot ${statusDotClass(r.status)}">${escapeRecordHtml(r.status)}</span></td></tr>`).join('') || '<tr class="record-loading-row"><td colspan="5">공개된 사건 기록이 없습니다.</td></tr>';
     }
     document.querySelectorAll('.ryeo-table tbody tr[data-record-id]').forEach(row => row.addEventListener('click', () => openDynamicRecord(row.dataset.recordId)));
   } catch (error) {

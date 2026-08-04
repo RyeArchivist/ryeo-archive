@@ -29,9 +29,35 @@
           <label>기록번호<input id="recordNo" required placeholder="RY-2026-001" /></label>
           <label>임시 명칭<input id="title" required /></label>
           <label>지역<input id="region" value="미상" /></label>
-          <label>괴이 유형<input id="recordType" value="未分類" /></label>
-          <label>위험 분류<input id="riskLevel" value="평가 불가" /></label>
-          <label>진행 상태<input id="status" value="분석 중" /></label>
+          <fieldset class="type-fieldset">
+            <legend>괴이 유형 <small>복수 선택 가능</small></legend>
+            <div class="type-options" id="recordTypeOptions">
+              <label><input type="checkbox" name="recordType" value="現象" /> 현상형</label>
+              <label><input type="checkbox" name="recordType" value="個體" /> 개체형</label>
+              <label><input type="checkbox" name="recordType" value="物件" /> 물건형</label>
+              <label><input type="checkbox" name="recordType" value="傳染" /> 전염형</label>
+              <label><input type="checkbox" name="recordType" value="記錄" /> 기록형</label>
+              <label><input type="checkbox" name="recordType" value="未分類" checked /> 미분류</label>
+            </div>
+          </fieldset>
+          <label>위험 분류
+            <select id="riskLevel">
+              <option value="평가 불가">평가 불가</option>
+              <option value="접근 제한">접근 제한</option>
+              <option value="기록 오염">기록 오염</option>
+              <option value="인명 위험">인명 위험</option>
+            </select>
+          </label>
+          <label>진행 상태
+            <select id="status">
+              <option value="관찰 중">관찰 중</option>
+              <option value="분석 중" selected>분석 중</option>
+              <option value="회수 대기">회수 대기</option>
+              <option value="회수 완료">회수 완료</option>
+              <option value="열람 금지">열람 금지</option>
+              <option value="회수 기록 없음">회수 기록 없음</option>
+            </select>
+          </label>
           <label class="wide">담당 삼직<input id="assignedTo" placeholder="探-00 / 硏-00 / 護-00" /></label>
           <label class="wide">목록 요약<textarea id="summary" rows="3"></textarea></label>
           <label class="wide">기록 본문<textarea id="content" rows="15"></textarea></label>

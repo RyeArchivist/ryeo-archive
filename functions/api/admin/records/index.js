@@ -11,6 +11,28 @@ function clean(value, max = 10000) {
   return String(value ?? '').trim().slice(0, max);
 }
 
+
+const ALLOWED_TYPES = new Set(['現象', '個體', '物件', '傳染', '記錄', '未分類']);
+const ALLOWED_RISKS = new Set(['평가 불가', '접근 제한', '기록 오염', '인명 위험']);
+const ALLOWED_STATUSES = new Set(['관찰 중', '분석 중', '회수 대기', '회수 완료', '열람 금지', '회수 기록 없음']);
+
+function normalizeType(value) {
+  const parts = clean(value, 100)
+    .split('/')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (!parts.length) return '未分類';
+  if (parts.some((part) => !ALLOWED_TYPES.has(part))) return null;
+  if (parts.includes('未分類') && parts.length > 1) return null;
+  return [...new Set(parts)].join(' / ');
+}
+
+function normalizeChoice(value, allowed, fallback) {
+  const cleaned = clean(value, 100) || fallback;
+  return allowed.has(cleaned) ? cleaned : null;
+}
+
 function getAdminEmail(context) {
   return clean(context.request.headers.get('Cf-Access-Authenticated-User-Email'), 320).toLowerCase();
 }
@@ -44,13 +66,17 @@ export async function onRequestPost(context) {
     const recordNo = clean(body.record_no, 80);
     const title = clean(body.title, 200);
     if (!recordNo || !title) return json({ error: '기록번호와 제목은 필수입니다.' }, 400);
+    const recordType = normalizeType(body.record_type);
+    const riskLevel = normalizeChoice(body.risk_level, ALLOWED_RISKS, '평가 불가');
+    const recordStatus = normalizeChoice(body.status, ALLOWED_STATUSES, '분석 중');
+    if (!recordType || !riskLevel || !recordStatus) return json({ error: '허용되지 않은 분류 값입니다.' }, 400);
     const result = await context.env.DB.prepare(`
       INSERT INTO records
       (record_no, title, region, record_type, risk_level, status, assigned_to, summary, content, is_published, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `).bind(
-      recordNo, title, clean(body.region, 100) || '미상', clean(body.record_type, 100) || '未分類',
-      clean(body.risk_level, 100) || '평가 불가', clean(body.status, 100) || '분석 중',
+      recordNo, title, clean(body.region, 100) || '미상', recordType,
+      riskLevel, recordStatus,
       clean(body.assigned_to, 200), clean(body.summary, 1000), clean(body.content, 30000),
       body.is_published ? 1 : 0
     ).run();

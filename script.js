@@ -593,8 +593,16 @@ async function loadDynamicRyeoRecords() {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || '기록 목록 오류');
     dynamicRecordState.records = (data.records || []).slice().sort((a, b) => compareRecordNumbers(a, b, 'newest'));
-    const statsLoaded = await loadTriadStatusCounts();
-    if (!statsLoaded) updateTriadStatusCountsFromRecords(dynamicRecordState.records);
+
+    // 목록 API가 D1에서 같은 시점에 계산한 통계를 최우선으로 사용합니다.
+    // 별도 stats 경로의 배포/라우팅 문제 때문에 숫자가 고정되는 일을 막습니다.
+    if (data.stats && typeof data.stats === 'object') {
+      paintTriadStatusCounts(data.stats);
+    } else {
+      const statsLoaded = await loadTriadStatusCounts();
+      if (!statsLoaded) updateTriadStatusCountsFromRecords(dynamicRecordState.records);
+    }
+
     renderPublicRecordDirectory();
     if (dashBody) {
       dashBody.innerHTML = dynamicRecordState.records.slice(0,4).map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.record_type)}</td><td><span class="tag ${riskTagClass(r.risk_level)}">${escapeRecordHtml(r.risk_level)}</span></td><td><span class="status-dot ${statusDotClass(r.status)}">${escapeRecordHtml(r.status)}</span></td></tr>`).join('') || '<tr class="record-loading-row"><td colspan="5">공개된 사건 기록이 없습니다.</td></tr>';
@@ -602,6 +610,12 @@ async function loadDynamicRyeoRecords() {
     }
   } catch (error) {
     if (tbody) tbody.innerHTML = `<tr class="record-loading-row"><td colspan="6">${escapeRecordHtml(error.message)} — D1 연결 설정을 확인하십시오.</td></tr>`;
+    const activeEl = document.getElementById('triadActiveCount');
+    const unresolvedEl = document.getElementById('triadUnresolvedCount');
+    const containmentEl = document.getElementById('triadContainmentCount');
+    if (activeEl) activeEl.textContent = '활성 보고 연결 오류';
+    if (unresolvedEl) unresolvedEl.textContent = '미해명 연결 오류';
+    if (containmentEl) containmentEl.textContent = '격리 유지 연결 오류';
   }
 }
 async function openDynamicRecord(id) {

@@ -136,6 +136,7 @@ function clearForm() {
   $('deleteBtn').hidden = true;
   document.querySelectorAll('.record-item').forEach((el) => el.classList.remove('active'));
   msg('');
+  resetAttachments();
 }
 
 function fill(record) {
@@ -151,6 +152,7 @@ function fill(record) {
   $('editorTitle').textContent = record.record_no;
   $('deleteBtn').hidden = false;
   render();
+  loadAttachments(record.id);
 }
 
 function typeToKorean(value) {
@@ -265,3 +267,126 @@ buildAdminYearFilter();
 bindTypeRules();
 clearForm();
 load();
+
+
+// ─────────────────────────────────────────────────────────────
+// v13 AUDIO MASTER · attachment manager
+// ─────────────────────────────────────────────────────────────
+
+function attachmentMsg(text, error = false) {
+  const el = $('attachmentMessage');
+  if (!el) return;
+  el.hidden = !text;
+  el.textContent = text || '';
+  el.classList.toggle('error', error);
+}
+
+function resetAttachments() {
+  const btn = $('audioUploadBtn');
+  if (btn) btn.disabled = true;
+  const hint = $('attachmentHint');
+  if (hint) hint.textContent = '사건을 먼저 저장하면 음성 기록을 첨부할 수 있습니다.';
+  const list = $('attachmentList');
+  if (list) list.innerHTML = '<p class="loading">선택된 기록 없음</p>';
+  const file = $('audioFile');
+  if (file) file.value = '';
+  attachmentMsg('');
+}
+
+function renderAttachments(items = []) {
+  const list = $('attachmentList');
+  if (!list) return;
+  if (!items.length) {
+    list.innerHTML = '<p class="loading">등록된 첨부 기록이 없습니다.</p>';
+    return;
+  }
+
+  list.innerHTML = items.map((item) => `
+    <article class="admin-attachment-item">
+      <b>${esc(item.attachment_type || 'FILE')}</b>
+      <div>
+        <span>${esc(item.title || '제목 없음')}</span>
+        <small>${esc(item.mime_type || '')}</small>
+      </div>
+      <button type="button" class="admin-attachment-delete" data-attachment-delete="${item.id}">삭제</button>
+    </article>
+  `).join('');
+
+  list.querySelectorAll('[data-attachment-delete]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const id = button.dataset.attachmentDelete;
+      if (!confirm('이 첨부 기록을 삭제할까요?')) return;
+      try {
+        const response = await fetch(`/api/admin/attachments/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '삭제 실패');
+        attachmentMsg('첨부 기록이 삭제되었습니다.');
+        if (selected?.id) await loadAttachments(selected.id);
+      } catch (error) {
+        attachmentMsg(error.message, true);
+      }
+    });
+  });
+}
+
+async function loadAttachments(recordId) {
+  const btn = $('audioUploadBtn');
+  if (btn) btn.disabled = !recordId;
+  const hint = $('attachmentHint');
+  if (hint) hint.textContent = recordId
+    ? 'MP3·OGG·WAV 등 음성 파일을 올리면 공개 기록에서 려 AUDIO VIEWER로 자동 재생됩니다.'
+    : '사건을 먼저 저장하면 음성 기록을 첨부할 수 있습니다.';
+
+  if (!recordId) return resetAttachments();
+
+  const list = $('attachmentList');
+  if (list) list.innerHTML = '<p class="loading">첨부 기록 확인 중…</p>';
+
+  try {
+    const response = await fetch(`/api/admin/attachments?record_id=${encodeURIComponent(recordId)}`, { credentials: 'same-origin' });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || '첨부자료 불러오기 실패');
+    renderAttachments(data.attachments || []);
+  } catch (error) {
+    if (list) list.innerHTML = `<p class="message error">${esc(error.message)}</p>`;
+  }
+}
+
+if ($('audioUploadBtn')) {
+  $('audioUploadBtn').addEventListener('click', async () => {
+    if (!selected?.id) {
+      attachmentMsg('사건을 먼저 저장하세요.', true);
+      return;
+    }
+
+    const file = $('audioFile')?.files?.[0];
+    if (!file) {
+      attachmentMsg('음성 파일을 선택하세요.', true);
+      return;
+    }
+
+    const form = new FormData();
+    form.append('record_id', String(selected.id));
+    form.append('title', $('audioTitle')?.value.trim() || '음성 기록');
+    form.append('file', file);
+
+    const button = $('audioUploadBtn');
+    button.disabled = true;
+    attachmentMsg('음성 기록 업로드 중…');
+
+    try {
+      const response = await fetch('/api/admin/attachments', { method: 'POST', body: form });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || '업로드 실패');
+
+      attachmentMsg('음성 기록이 저장되었습니다.');
+      $('audioFile').value = '';
+      if ($('audioTitle')) $('audioTitle').value = '';
+      await loadAttachments(selected.id);
+    } catch (error) {
+      attachmentMsg(error.message, true);
+    } finally {
+      button.disabled = false;
+    }
+  });
+}

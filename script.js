@@ -675,13 +675,52 @@ async function openDynamicRecord(id) {
   modal.hidden = false; document.body.style.overflow = 'hidden';
   document.getElementById('recordModalNo').textContent = 'RECORD ACCESS';
   document.getElementById('recordModalTitle').textContent = '기록을 불러오는 중…';
-  document.getElementById('recordModalMeta').innerHTML = ''; document.getElementById('recordModalSummary').textContent = ''; document.getElementById('recordModalContent').textContent = '';
+  document.getElementById('recordModalMeta').innerHTML = '';
+  document.getElementById('recordModalSummary').textContent = '';
+  document.getElementById('recordModalContent').textContent = '';
+  const attachmentSection = document.getElementById('recordModalAttachments');
+  const attachmentList = document.getElementById('recordAttachmentList');
+  if (attachmentSection) attachmentSection.hidden = true;
+  if (attachmentList) attachmentList.innerHTML = '';
+
   try {
-    const response = await fetch(`/api/records/${encodeURIComponent(id)}`); const data = await response.json(); if (!response.ok) throw new Error(data.error || '기록을 열 수 없습니다.'); const r=data.record;
-    document.getElementById('recordModalNo').textContent = r.record_no; document.getElementById('recordModalTitle').textContent = r.title;
-    document.getElementById('recordModalMeta').innerHTML = [r.region,r.record_type,r.risk_level,r.status,r.assigned_to].filter(Boolean).map(v=>`<span>${escapeRecordHtml(v)}</span>`).join('');
-    document.getElementById('recordModalSummary').textContent = r.summary || '요약 없음'; document.getElementById('recordModalContent').textContent = r.content || '공개된 본문이 없습니다.';
-  } catch(error) { document.getElementById('recordModalTitle').textContent='열람 실패'; document.getElementById('recordModalContent').textContent=error.message; }
+    const response = await fetch(`/api/records/${encodeURIComponent(id)}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || '기록을 열 수 없습니다.');
+    const r = data.record;
+
+    document.getElementById('recordModalNo').textContent = r.record_no;
+    document.getElementById('recordModalTitle').textContent = r.title;
+    document.getElementById('recordModalMeta').innerHTML = [r.region,r.record_type,r.risk_level,r.status,r.assigned_to]
+      .filter(Boolean).map(v=>`<span>${escapeRecordHtml(v)}</span>`).join('');
+    document.getElementById('recordModalSummary').textContent = r.summary || '요약 없음';
+    document.getElementById('recordModalContent').textContent = r.content || '공개된 본문이 없습니다.';
+
+    const attachments = Array.isArray(data.attachments) ? data.attachments : [];
+    if (attachmentSection && attachmentList && attachments.length) {
+      attachmentList.innerHTML = attachments.map((item) => {
+        if (item.type === 'AUDIO' && item.url) {
+          return `<button type="button" class="attachment-open"
+            data-ry-audio-url="${escapeRecordHtml(item.url)}"
+            data-ry-audio-title="${escapeRecordHtml(item.title || '음성 기록')}">
+            <span>${escapeRecordHtml(item.title || '음성 기록')}</span>
+            <small>AUDIO RECORD · 열람</small>
+          </button>`;
+        }
+        if (item.url) {
+          return `<a class="attachment-open" href="${escapeRecordHtml(item.url)}" target="_blank" rel="noopener">
+            <span>${escapeRecordHtml(item.title || '첨부 기록')}</span>
+            <small>${escapeRecordHtml(item.type || 'FILE')} · 열람</small>
+          </a>`;
+        }
+        return '';
+      }).join('');
+      attachmentSection.hidden = false;
+    }
+  } catch(error) {
+    document.getElementById('recordModalTitle').textContent='열람 실패';
+    document.getElementById('recordModalContent').textContent=error.message;
+  }
 }
 document.querySelectorAll('[data-record-close]').forEach(el => el.addEventListener('click',()=>{document.getElementById('recordModal').hidden=true;document.body.style.overflow='';}));
 const originalActivateRyeoModeDynamic = activateRyeoMode;

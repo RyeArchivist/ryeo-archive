@@ -31,7 +31,31 @@ export async function onRequestGet(context) {
       FROM records WHERE is_published = 1 AND (CAST(id AS TEXT) = ? OR record_no = ?) LIMIT 1
     `).bind(id, id).first();
     if (!row) return json({ error: '공개된 기록을 찾을 수 없습니다.' }, 404);
-    return json({ record: row });
+
+    let attachments = [];
+    try {
+      const result = await context.env.DB.prepare(`
+        SELECT id, attachment_type, title, file_key, external_url, mime_type, sort_order
+        FROM record_attachments
+        WHERE record_id = ? AND public_level = 'PUBLIC'
+        ORDER BY sort_order ASC, id ASC
+      `).bind(row.id).all();
+
+      attachments = (result.results || []).map((item) => ({
+        id: item.id,
+        type: item.attachment_type,
+        title: item.title,
+        mime_type: item.mime_type,
+        url: item.file_key
+          ? `/api/media?key=${encodeURIComponent(item.file_key)}`
+          : item.external_url
+      }));
+    } catch (_) {
+      // Existing databases that have not applied the v13 migration still open records normally.
+      attachments = [];
+    }
+
+    return json({ record: row, attachments });
   } catch (error) {
     return json({ error: '기록을 불러오지 못했습니다.', detail: error.message }, 500);
   }

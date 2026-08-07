@@ -89,7 +89,27 @@ export async function onRequestDelete(context) {
   const auth = requireAdmin(context);
   if (auth.error) return auth.error;
   const id = clean(context.params.id, 80);
-  const result = await context.env.DB.prepare(`DELETE FROM records WHERE CAST(id AS TEXT) = ? OR record_no = ?`).bind(id, id).run();
+
+  const record = await context.env.DB.prepare(
+    `SELECT id FROM records WHERE CAST(id AS TEXT) = ? OR record_no = ? LIMIT 1`
+  ).bind(id, id).first();
+  if (!record) return json({ error: '기록을 찾을 수 없습니다.' }, 404);
+
+  // Remove attached R2 media first when the v13 table/binding exists.
+  try {
+    const attachments = await context.env.DB.prepare(
+      `SELECT file_key FROM record_attachments WHERE record_id = ? AND file_key IS NOT NULL`
+    ).bind(record.id).all();
+
+    if (context.env.MEDIA) {
+      await Promise.all((attachments.results || []).map((item) => context.env.MEDIA.delete(item.file_key)));
+    }
+    await context.env.DB.prepare(`DELETE FROM record_attachments WHERE record_id = ?`).bind(record.id).run();
+  } catch (_) {
+    // Keep record deletion compatible with databases that have not migrated yet.
+  }
+
+  const result = await context.env.DB.prepare(`DELETE FROM records WHERE id = ?`).bind(record.id).run();
   if (!result.meta?.changes) return json({ error: '기록을 찾을 수 없습니다.' }, 404);
   return json({ ok: true, admin: auth.email });
 }

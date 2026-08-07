@@ -7,6 +7,7 @@
   <meta name="description" content="생활환경기록보존원은 생활과 환경의 변화 속에서 발생하는 다양한 기록을 수집·보존·정리하는 비영리 공공재단입니다." />
   <link rel="icon" type="image/svg+xml" href="assets/logo-approved.png" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="audio-viewer.css" />
 </head>
 <body>
 
@@ -822,9 +823,14 @@
       <div class="record-modal__meta" id="recordModalMeta"></div>
       <p class="record-modal__summary" id="recordModalSummary"></p>
       <div class="record-modal__content" id="recordModalContent"></div>
+      <section class="record-attachments" id="recordModalAttachments" hidden>
+        <h3>ATTACHED ARCHIVE</h3>
+        <div class="attachment-list" id="recordAttachmentList"></div>
+      </section>
     </article>
   </div>
   <script src="archive-data.js"></script>
+  <script src="audio-viewer.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

@@ -101,3 +101,10 @@
 사이트 파일을 배포한 뒤 Cloudflare D1 콘솔에서 `bulk_records.sql` 내용을 한 번 실행하십시오.
 기존 게시글은 유지되며 같은 기록번호가 있으면 자동으로 건너뜁니다.
 모든 배경 기록은 공개 상태로 등록되며 유튜브 연동 정보는 포함하지 않습니다.
+
+
+## v13 AUDIO MASTER
+- 관리자 음성 첨부 기능
+- Cloudflare R2 저장 + D1 첨부 메타데이터
+- 실제 MP3 기반 자동 파형 AUDIO VIEWER
+- 자세한 적용법: `README_V13_AUDIO_MASTER.md`

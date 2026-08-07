@@ -106,6 +106,112 @@ function bindTypeRules() {
   });
 }
 
+
+// ─────────────────────────────────────────────────────────────
+// v13.2 · 담당 삼직 / 기록관 입력 보조
+// assigned_to 컬럼은 기존 DB 구조를 유지하고 표시 문자열만 자동 생성한다.
+// 예: 탐-01 / 연-03 / 호-12 / 기록관
+// 기존 한자 기록(探-01 / 硏-03 / 護-12)도 편집 시 자동 인식한다.
+// ─────────────────────────────────────────────────────────────
+const ROLE_CONTROLS = {
+  tam: { check: 'roleTamCheck', number: 'roleTamNo', label: '탐', legacy: '探' },
+  yeon: { check: 'roleYeonCheck', number: 'roleYeonNo', label: '연', legacy: '硏' },
+  ho: { check: 'roleHoCheck', number: 'roleHoNo', label: '호', legacy: '護' },
+};
+
+function cleanRoleNumber(value) {
+  return String(value || '').replace(/\D/g, '').slice(0, 4);
+}
+
+function syncAssignedToFromControls() {
+  const parts = [];
+
+  Object.values(ROLE_CONTROLS).forEach((role) => {
+    const check = $(role.check);
+    const number = $(role.number);
+    if (!check || !number) return;
+
+    number.value = cleanRoleNumber(number.value);
+    number.disabled = !check.checked;
+
+    if (check.checked) {
+      const no = number.value.trim();
+      parts.push(no ? `${role.label}-${no}` : role.label);
+    }
+  });
+
+  if ($('roleKeeperCheck')?.checked) parts.push('기록관');
+
+  const value = parts.join(' / ');
+  $('assignedTo').value = value;
+
+  const preview = $('assignedPreview');
+  if (preview) preview.textContent = `표시: ${value || '-'}`;
+
+  return value;
+}
+
+function setAssignmentControls(value) {
+  const raw = String(value || '').trim();
+
+  Object.values(ROLE_CONTROLS).forEach((role) => {
+    const check = $(role.check);
+    const number = $(role.number);
+    if (!check || !number) return;
+
+    const pattern = new RegExp(`(?:^|[\\/·,\\s])(?:${role.label}|${role.legacy})\\s*[-:]?\\s*(\\d{0,4})(?=$|[\\/·,\\s])`);
+    const loosePattern = new RegExp(`(?:${role.label}|${role.legacy})\\s*[-:]?\\s*(\\d{0,4})`);
+    const match = raw.match(pattern) || raw.match(loosePattern);
+
+    check.checked = !!match;
+    number.value = match ? cleanRoleNumber(match[1]) : '';
+    number.disabled = !check.checked;
+  });
+
+  if ($('roleKeeperCheck')) {
+    $('roleKeeperCheck').checked = /기록관/.test(raw);
+  }
+
+  syncAssignedToFromControls();
+}
+
+function resetAssignmentControls() {
+  Object.values(ROLE_CONTROLS).forEach((role) => {
+    const check = $(role.check);
+    const number = $(role.number);
+    if (check) check.checked = false;
+    if (number) {
+      number.value = '';
+      number.disabled = true;
+    }
+  });
+  if ($('roleKeeperCheck')) $('roleKeeperCheck').checked = false;
+  syncAssignedToFromControls();
+}
+
+function bindAssignmentControls() {
+  Object.values(ROLE_CONTROLS).forEach((role) => {
+    const check = $(role.check);
+    const number = $(role.number);
+
+    check?.addEventListener('change', () => {
+      if (number) {
+        number.disabled = !check.checked;
+        if (check.checked) number.focus();
+      }
+      syncAssignedToFromControls();
+    });
+
+    number?.addEventListener('input', () => {
+      number.value = cleanRoleNumber(number.value);
+      if (number.value && check) check.checked = true;
+      syncAssignedToFromControls();
+    });
+  });
+
+  $('roleKeeperCheck')?.addEventListener('change', syncAssignedToFromControls);
+}
+
 function msg(text, error = false) {
   const el = $('message');
   el.hidden = !text;
@@ -114,6 +220,7 @@ function msg(text, error = false) {
 }
 
 function payload() {
+  syncAssignedToFromControls();
   const data = Object.fromEntries(
     Object.entries(fields).map(([key, element]) => [
       key,
@@ -127,6 +234,7 @@ function payload() {
 function clearForm() {
   selected = null;
   $('recordForm').reset();
+  resetAssignmentControls();
   $('recordId').value = '';
   $('region').value = '미상';
   $('riskLevel').value = '평가 불가';
@@ -148,6 +256,7 @@ function fill(record) {
     else element.value = record[key] ?? '';
   }
 
+  setAssignmentControls(record.assigned_to);
   setSelectedTypes(record.record_type);
   $('editorTitle').textContent = record.record_no;
   $('deleteBtn').hidden = false;
@@ -265,13 +374,16 @@ $('filterInput').oninput = render;
 $('yearFilter').onchange = () => { selectedYear = $('yearFilter').value; render(); };
 buildAdminYearFilter();
 bindTypeRules();
+bindAssignmentControls();
 clearForm();
 load();
 
 
 // ─────────────────────────────────────────────────────────────
-// v13 AUDIO MASTER · attachment manager
+// v13.4 MASTER · generic attachment manager + inline placement
 // ─────────────────────────────────────────────────────────────
+let currentAttachments = [];
+let pendingInlineCursor = null;
 
 function attachmentMsg(text, error = false) {
   const el = $('attachmentMessage');
@@ -282,18 +394,39 @@ function attachmentMsg(text, error = false) {
 }
 
 function resetAttachments() {
-  const btn = $('audioUploadBtn');
+  currentAttachments = [];
+  const btn = $('attachmentUploadBtn');
   if (btn) btn.disabled = true;
   const hint = $('attachmentHint');
-  if (hint) hint.textContent = '사건을 먼저 저장하면 음성 기록을 첨부할 수 있습니다.';
+  if (hint) hint.textContent = '사건을 먼저 저장하면 자료를 첨부할 수 있습니다.';
   const list = $('attachmentList');
   if (list) list.innerHTML = '<p class="loading">선택된 기록 없음</p>';
-  const file = $('audioFile');
+  const file = $('attachmentFile');
   if (file) file.value = '';
   attachmentMsg('');
 }
 
+function typeLabel(type) {
+  return type === 'AUDIO' ? '음성' : type === 'IMAGE' ? '이미지' : type || 'FILE';
+}
+
+function insertAttachmentToken(id, cursor = null) {
+  const textarea = $('content');
+  if (!textarea) return;
+  const token = `\n[[ATTACHMENT:${id}]]\n`;
+  const start = Number.isInteger(cursor) ? cursor : textarea.selectionStart;
+  const end = Number.isInteger(cursor) ? cursor : textarea.selectionEnd;
+  const before = textarea.value.slice(0, start);
+  const after = textarea.value.slice(end);
+  textarea.value = before + token + after;
+  const caret = before.length + token.length;
+  textarea.focus();
+  textarea.setSelectionRange(caret, caret);
+  msg('본문에 첨부자료 위치가 삽입되었습니다. 기록 저장을 눌러 반영하세요.');
+}
+
 function renderAttachments(items = []) {
+  currentAttachments = items;
   const list = $('attachmentList');
   if (!list) return;
   if (!items.length) {
@@ -303,19 +436,24 @@ function renderAttachments(items = []) {
 
   list.innerHTML = items.map((item) => `
     <article class="admin-attachment-item">
-      <b>${esc(item.attachment_type || 'FILE')}</b>
+      <b>${esc(typeLabel(item.attachment_type))}</b>
       <div>
         <span>${esc(item.title || '제목 없음')}</span>
-        <small>${esc(item.mime_type || '')}</small>
+        <small>${esc(item.mime_type || '')} · ID ${item.id}</small>
       </div>
+      <button type="button" class="attachment-inline-insert" data-attachment-inline="${item.id}">본문 삽입</button>
       <button type="button" class="admin-attachment-delete" data-attachment-delete="${item.id}">삭제</button>
     </article>
   `).join('');
 
+  list.querySelectorAll('[data-attachment-inline]').forEach((button) => {
+    button.addEventListener('click', () => insertAttachmentToken(Number(button.dataset.attachmentInline)));
+  });
+
   list.querySelectorAll('[data-attachment-delete]').forEach((button) => {
     button.addEventListener('click', async () => {
       const id = button.dataset.attachmentDelete;
-      if (!confirm('이 첨부 기록을 삭제할까요?')) return;
+      if (!confirm('이 첨부 기록을 삭제할까요? 본문에 삽입된 표식은 직접 제거해야 합니다.')) return;
       try {
         const response = await fetch(`/api/admin/attachments/${encodeURIComponent(id)}`, { method: 'DELETE' });
         const data = await response.json();
@@ -330,12 +468,12 @@ function renderAttachments(items = []) {
 }
 
 async function loadAttachments(recordId) {
-  const btn = $('audioUploadBtn');
+  const btn = $('attachmentUploadBtn');
   if (btn) btn.disabled = !recordId;
   const hint = $('attachmentHint');
   if (hint) hint.textContent = recordId
-    ? 'MP3·OGG·WAV 등 음성 파일을 올리면 공개 기록에서 려 AUDIO VIEWER로 자동 재생됩니다.'
-    : '사건을 먼저 저장하면 음성 기록을 첨부할 수 있습니다.';
+    ? '음성·이미지를 업로드한 뒤 본문 원하는 위치에 삽입할 수 있습니다.'
+    : '사건을 먼저 저장하면 자료를 첨부할 수 있습니다.';
 
   if (!recordId) return resetAttachments();
 
@@ -352,41 +490,104 @@ async function loadAttachments(recordId) {
   }
 }
 
-if ($('audioUploadBtn')) {
-  $('audioUploadBtn').addEventListener('click', async () => {
+if ($('attachmentType')) {
+  $('attachmentType').addEventListener('change', () => {
+    const input = $('attachmentFile');
+    if (!input) return;
+    input.accept = $('attachmentType').value === 'IMAGE'
+      ? 'image/jpeg,image/png,image/webp,image/gif'
+      : 'audio/mpeg,audio/ogg,audio/wav,audio/x-wav,audio/mp4,audio/aac';
+  });
+}
+
+if ($('attachmentUploadBtn')) {
+  $('attachmentUploadBtn').addEventListener('click', async () => {
     if (!selected?.id) {
       attachmentMsg('사건을 먼저 저장하세요.', true);
       return;
     }
 
-    const file = $('audioFile')?.files?.[0];
+    const file = $('attachmentFile')?.files?.[0];
     if (!file) {
-      attachmentMsg('음성 파일을 선택하세요.', true);
+      attachmentMsg('첨부 파일을 선택하세요.', true);
       return;
     }
 
+    const type = $('attachmentType')?.value || 'AUDIO';
     const form = new FormData();
     form.append('record_id', String(selected.id));
-    form.append('title', $('audioTitle')?.value.trim() || '음성 기록');
+    form.append('attachment_type', type);
+    form.append('title', $('attachmentTitle')?.value.trim() || (type === 'IMAGE' ? '이미지 기록' : '음성 기록'));
     form.append('file', file);
 
-    const button = $('audioUploadBtn');
+    const button = $('attachmentUploadBtn');
     button.disabled = true;
-    attachmentMsg('음성 기록 업로드 중…');
+    attachmentMsg('첨부자료 업로드 중…');
 
     try {
       const response = await fetch('/api/admin/attachments', { method: 'POST', body: form });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || '업로드 실패');
 
-      attachmentMsg('음성 기록이 저장되었습니다.');
-      $('audioFile').value = '';
-      if ($('audioTitle')) $('audioTitle').value = '';
+      attachmentMsg('첨부자료가 저장되었습니다. 본문 위치에 삽입할 수 있습니다.');
+      $('attachmentFile').value = '';
+      if ($('attachmentTitle')) $('attachmentTitle').value = '';
       await loadAttachments(selected.id);
     } catch (error) {
       attachmentMsg(error.message, true);
     } finally {
       button.disabled = false;
+    }
+  });
+}
+
+function openInlineAttachModal() {
+  if (!selected?.id) {
+    msg('본문에 첨부자료를 넣으려면 사건을 먼저 저장하세요.', true);
+    return;
+  }
+  pendingInlineCursor = $('content')?.selectionStart ?? null;
+  const modal = $('inlineAttachModal');
+  const list = $('inlineAttachList');
+  if (!modal || !list) return;
+
+  if (!currentAttachments.length) {
+    list.innerHTML = '<p class="loading">등록된 첨부자료가 없습니다. 먼저 아래 첨부자료 관리에서 파일을 업로드하세요.</p>';
+  } else {
+    list.innerHTML = currentAttachments.map(item => `
+      <button type="button" class="inline-attach-choice" data-inline-choice="${item.id}">
+        <b>${esc(typeLabel(item.attachment_type))}</b>
+        <span>${esc(item.title || '제목 없음')}</span>
+        <small>본문에 삽입</small>
+      </button>
+    `).join('');
+    list.querySelectorAll('[data-inline-choice]').forEach(button => {
+      button.addEventListener('click', () => {
+        insertAttachmentToken(Number(button.dataset.inlineChoice), pendingInlineCursor);
+        modal.hidden = true;
+      });
+    });
+  }
+  modal.hidden = false;
+}
+
+$('inlineAttachmentBtn')?.addEventListener('click', openInlineAttachModal);
+$('inlineAttachClose')?.addEventListener('click', () => { $('inlineAttachModal').hidden = true; });
+$('inlineAttachModal')?.addEventListener('click', (e) => {
+  if (e.target === $('inlineAttachModal')) $('inlineAttachModal').hidden = true;
+});
+
+if ($('attachmentJumpBtn')) {
+  $('attachmentJumpBtn').addEventListener('click', () => {
+    const manager = $('attachmentManager');
+    if (!manager) return;
+    manager.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    manager.classList.add('attachment-focus');
+    setTimeout(() => manager.classList.remove('attachment-focus'), 1400);
+    if (!selected?.id) {
+      attachmentMsg('새 사건은 먼저 "기록 저장"을 눌러 저장한 뒤 첨부할 수 있습니다.', true);
+    } else {
+      attachmentMsg('음성 또는 이미지를 업로드한 뒤 “본문 삽입”으로 원하는 위치에 넣을 수 있습니다.');
     }
   });
 }

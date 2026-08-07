@@ -508,6 +508,17 @@ document.getElementById('exitRyeoMode')?.addEventListener('click', () => {
 const dynamicRecordState = { records: [], selectedYear: 'all', selectedStatus: 'all', sort: 'newest', search: '' };
 const ARCHIVE_INDEX = window.RYEO_ARCHIVE_INDEX || { startYear: 1912, currentYear: 2026, pre1912:{total:1473}, counts:{} };
 function escapeRecordHtml(value) { return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+function formatAssignedTo(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '-';
+  const parts = [];
+  [['探','탐'],['硏','연'],['護','호']].forEach(([hanja, korean]) => {
+    const m = raw.match(new RegExp(`(?:${korean}|${hanja})\\s*[-:]?\\s*(\\d{0,4})`));
+    if (m) parts.push(m[1] ? `${hanja}-${m[1]}` : hanja);
+  });
+  if (/기록관/.test(raw)) parts.push('기록관');
+  return parts.length ? parts.join(' / ') : raw.replace(/탐/g,'探').replace(/연/g,'硏').replace(/호/g,'護');
+}
 function riskTagClass(value) {
   return ({'기록 오염':'tag--orange','접근 제한':'tag--blue','인명 위험':'tag--red','평가 불가':'tag--gray'})[value] || 'tag--gray';
 }
@@ -608,7 +619,7 @@ function renderPublicRecordDirectory() {
     return;
   }
   const records = filteredPublicRecords();
-  tbody.innerHTML = records.map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.region)}</td><td>${escapeRecordHtml(r.assigned_to || '-')}</td><td>${escapeRecordHtml(r.record_type)}</td><td><span class="status-dot ${statusDotClass(r.status)}">${escapeRecordHtml(r.status)}</span></td></tr>`).join('') || '<tr class="record-loading-row"><td colspan="6">해당 연도에는 현재 공개된 상세 기록이 없습니다. 색인 정보만 보존되어 있습니다.</td></tr>';
+  tbody.innerHTML = records.map(r => `<tr data-record-id="${r.id}"><td>${escapeRecordHtml(r.record_no)}</td><td>${escapeRecordHtml(r.title)}</td><td>${escapeRecordHtml(r.region)}</td><td>${escapeRecordHtml(formatAssignedTo(r.assigned_to))}</td><td>${escapeRecordHtml(r.record_type)}</td><td><span class="status-dot ${statusDotClass(r.status)}">${escapeRecordHtml(r.status)}</span></td></tr>`).join('') || '<tr class="record-loading-row"><td colspan="6">해당 연도에는 현재 공개된 상세 기록이 없습니다. 색인 정보만 보존되어 있습니다.</td></tr>';
   tbody.querySelectorAll('tr[data-record-id]').forEach(row => row.addEventListener('click', () => openDynamicRecord(row.dataset.recordId)));
   updatePublicYearSummary();
 }
@@ -670,6 +681,104 @@ async function loadDynamicRyeoRecords() {
     if (containmentEl) containmentEl.textContent = '격리 유지 연결 오류';
   }
 }
+
+function attachmentCardHtml(item, inline = false) {
+  if (!item || !item.url) return '';
+  const title = escapeRecordHtml(item.title || '첨부 기록');
+  if (item.type === 'AUDIO') {
+    return `<button type="button" class="attachment-open ${inline?'attachment-inline-card':''}"
+      data-ry-audio-url="${escapeRecordHtml(item.url)}"
+      data-ry-audio-title="${title}">
+      <span>${title}</span>
+      <small>音聲記錄 · AUDIO RECORD · 열람</small>
+    </button>`;
+  }
+  if (item.type === 'IMAGE') {
+    return `<button type="button" class="attachment-open ${inline?'attachment-inline-card':''}"
+      data-ry-image-url="${escapeRecordHtml(item.url)}"
+      data-ry-image-title="${title}">
+      <span>${title}</span>
+      <small>圖像記錄 · IMAGE ARCHIVE · 열람</small>
+    </button>`;
+  }
+  return `<a class="attachment-open ${inline?'attachment-inline-card':''}" href="${escapeRecordHtml(item.url)}" target="_blank" rel="noopener">
+    <span>${title}</span><small>${escapeRecordHtml(item.type || 'FILE')} · 열람</small>
+  </a>`;
+}
+
+function renderRecordContentWithAttachments(container, content, attachments) {
+  container.innerHTML = '';
+  const map = new Map((attachments || []).map(item => [String(item.id), item]));
+  const used = new Set();
+  const source = String(content || '공개된 본문이 없습니다.');
+  const token = /\[\[ATTACHMENT:(\d+)\]\]/g;
+  let last = 0;
+  let match;
+
+  while ((match = token.exec(source))) {
+    const text = source.slice(last, match.index);
+    if (text) {
+      const span = document.createElement('span');
+      span.className = 'record-content-text';
+      span.textContent = text;
+      container.appendChild(span);
+    }
+
+    const item = map.get(match[1]);
+    const block = document.createElement('div');
+    block.className = 'record-inline-attachment';
+    if (item) {
+      used.add(match[1]);
+      block.innerHTML = attachmentCardHtml(item, true);
+    } else {
+      block.innerHTML = '<div class="attachment-missing">첨부자료를 찾을 수 없습니다.</div>';
+    }
+    container.appendChild(block);
+    last = token.lastIndex;
+  }
+
+  const tail = source.slice(last);
+  if (tail) {
+    const span = document.createElement('span');
+    span.className = 'record-content-text';
+    span.textContent = tail;
+    container.appendChild(span);
+  }
+
+  return used;
+}
+
+function ensureImageViewer() {
+  let viewer = document.getElementById('ryImageViewer');
+  if (viewer) return viewer;
+  viewer = document.createElement('div');
+  viewer.id = 'ryImageViewer';
+  viewer.className = 'ry-image-viewer';
+  viewer.hidden = true;
+  viewer.innerHTML = `
+    <div class="ry-image-viewer__frame">
+      <div class="ry-image-viewer__head"><span>慮 · ARCHIVE IMAGE VIEWER</span><button type="button" data-image-close>×</button></div>
+      <div class="ry-image-viewer__stage"><img alt=""></div>
+      <div class="ry-image-viewer__title"></div>
+    </div>`;
+  document.body.appendChild(viewer);
+  viewer.addEventListener('click', e => {
+    if (e.target === viewer || e.target.closest('[data-image-close]')) {
+      viewer.hidden = true;
+    }
+  });
+  return viewer;
+}
+
+document.addEventListener('click', e => {
+  const trigger = e.target.closest('[data-ry-image-url]');
+  if (!trigger) return;
+  e.preventDefault();
+  const viewer = ensureImageViewer();
+  viewer.querySelector('img').src = trigger.dataset.ryImageUrl;
+  viewer.querySelector('.ry-image-viewer__title').textContent = trigger.dataset.ryImageTitle || '이미지 기록';
+  viewer.hidden = false;
+});
 async function openDynamicRecord(id) {
   const modal = document.getElementById('recordModal');
   modal.hidden = false; document.body.style.overflow = 'hidden';
@@ -691,31 +800,23 @@ async function openDynamicRecord(id) {
 
     document.getElementById('recordModalNo').textContent = r.record_no;
     document.getElementById('recordModalTitle').textContent = r.title;
-    document.getElementById('recordModalMeta').innerHTML = [r.region,r.record_type,r.risk_level,r.status,r.assigned_to]
+    document.getElementById('recordModalMeta').innerHTML = [r.region,r.record_type,r.risk_level,r.status,formatAssignedTo(r.assigned_to)]
       .filter(Boolean).map(v=>`<span>${escapeRecordHtml(v)}</span>`).join('');
     document.getElementById('recordModalSummary').textContent = r.summary || '요약 없음';
-    document.getElementById('recordModalContent').textContent = r.content || '공개된 본문이 없습니다.';
 
     const attachments = Array.isArray(data.attachments) ? data.attachments : [];
-    if (attachmentSection && attachmentList && attachments.length) {
-      attachmentList.innerHTML = attachments.map((item) => {
-        if (item.type === 'AUDIO' && item.url) {
-          return `<button type="button" class="attachment-open"
-            data-ry-audio-url="${escapeRecordHtml(item.url)}"
-            data-ry-audio-title="${escapeRecordHtml(item.title || '음성 기록')}">
-            <span>${escapeRecordHtml(item.title || '음성 기록')}</span>
-            <small>AUDIO RECORD · 열람</small>
-          </button>`;
-        }
-        if (item.url) {
-          return `<a class="attachment-open" href="${escapeRecordHtml(item.url)}" target="_blank" rel="noopener">
-            <span>${escapeRecordHtml(item.title || '첨부 기록')}</span>
-            <small>${escapeRecordHtml(item.type || 'FILE')} · 열람</small>
-          </a>`;
-        }
-        return '';
-      }).join('');
+    const usedInline = renderRecordContentWithAttachments(
+      document.getElementById('recordModalContent'),
+      r.content,
+      attachments
+    );
+
+    const remainingAttachments = attachments.filter(item => !usedInline.has(String(item.id)));
+    if (attachmentSection && attachmentList && remainingAttachments.length) {
+      attachmentList.innerHTML = remainingAttachments.map((item) => attachmentCardHtml(item, false)).join('');
       attachmentSection.hidden = false;
+    } else if (attachmentSection) {
+      attachmentSection.hidden = true;
     }
   } catch(error) {
     document.getElementById('recordModalTitle').textContent='열람 실패';

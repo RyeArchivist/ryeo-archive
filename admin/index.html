@@ -28,7 +28,11 @@
         <input type="hidden" id="recordId" />
         <div class="editor-head">
           <div><span>RECORD EDITOR</span><h2 id="editorTitle">새 사건 기록</h2></div>
-          <div class="editor-actions"><button type="button" id="deleteBtn" class="danger" hidden>삭제</button><button type="submit" class="primary">기록 저장</button></div>
+          <div class="editor-actions">
+            <button type="button" id="attachmentJumpBtn" class="attachment-top-btn">＋ 첨부파일</button>
+            <button type="button" id="deleteBtn" class="danger" hidden>삭제</button>
+            <button type="submit" class="primary">기록 저장</button>
+          </div>
         </div>
         <div id="message" class="message" hidden></div>
         <div class="form-grid">
@@ -65,9 +69,50 @@
               <option value="회수 기록 없음">회수 기록 없음</option>
             </select>
           </label>
-          <label class="wide">담당 삼직<input id="assignedTo" placeholder="探-00 / 硏-00 / 護-00" /></label>
+          <fieldset class="wide triad-assignment">
+            <legend>담당 삼직 / 기록관</legend>
+            <p class="triad-assignment__help">복수 선택 가능 · 선택한 직책만 공개 기록에 표시됩니다.</p>
+
+            <div class="triad-assignment__grid">
+              <label class="triad-role">
+                <input type="checkbox" id="roleTamCheck" />
+                <span class="triad-role__name">탐</span>
+                <span class="triad-role__dash">-</span>
+                <input type="text" id="roleTamNo" class="triad-role__number" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="번호" disabled />
+              </label>
+
+              <label class="triad-role">
+                <input type="checkbox" id="roleYeonCheck" />
+                <span class="triad-role__name">연</span>
+                <span class="triad-role__dash">-</span>
+                <input type="text" id="roleYeonNo" class="triad-role__number" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="번호" disabled />
+              </label>
+
+              <label class="triad-role">
+                <input type="checkbox" id="roleHoCheck" />
+                <span class="triad-role__name">호</span>
+                <span class="triad-role__dash">-</span>
+                <input type="text" id="roleHoNo" class="triad-role__number" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="번호" disabled />
+              </label>
+
+              <label class="triad-role triad-role--keeper">
+                <input type="checkbox" id="roleKeeperCheck" />
+                <span class="triad-role__name">기록관</span>
+              </label>
+            </div>
+
+            <input id="assignedTo" type="hidden" />
+            <div id="assignedPreview" class="triad-assignment__preview">표시: -</div>
+          </fieldset>
           <label class="wide">목록 요약<textarea id="summary" rows="3"></textarea></label>
-          <label class="wide">기록 본문<textarea id="content" rows="15"></textarea></label>
+          <div class="wide content-editor-block">
+            <div class="content-editor-head">
+              <label for="content">기록 본문</label>
+              <button type="button" id="inlineAttachmentBtn" class="inline-attachment-btn">＋ 첨부자료</button>
+            </div>
+            <textarea id="content" rows="15"></textarea>
+            <small class="content-editor-help">본문에서 원하는 위치에 커서를 놓고 ‘＋ 첨부자료’를 누르면 그 위치에 자료가 삽입됩니다.</small>
+          </div>
           <label class="publish"><input type="checkbox" id="published" /> 일반 열람자에게 공개</label>
         </div>
       </form>
@@ -76,19 +121,25 @@
         <div class="attachment-manager__head">
           <div>
             <span>RECORD ATTACHMENTS</span>
-            <h3>첨부 기록 관리</h3>
+            <h3>첨부자료 관리</h3>
           </div>
-          <small id="attachmentHint">사건을 먼저 저장하면 음성 기록을 첨부할 수 있습니다.</small>
+          <small id="attachmentHint">사건을 먼저 저장하면 자료를 첨부할 수 있습니다.</small>
         </div>
 
-        <div class="audio-upload-grid">
-          <label>음성 기록 제목
-            <input id="audioTitle" placeholder="현장 음성 기록 01" />
+        <div class="attachment-upload-grid">
+          <label>자료 유형
+            <select id="attachmentType">
+              <option value="AUDIO">음성 기록</option>
+              <option value="IMAGE">이미지 / 스케치 / 고문서</option>
+            </select>
           </label>
-          <label>음성 파일
-            <input id="audioFile" type="file" accept="audio/mpeg,audio/ogg,audio/wav,audio/mp4,audio/aac" />
+          <label>자료 제목
+            <input id="attachmentTitle" placeholder="현장 음성 기록 01 / 현장 스케치 01" />
           </label>
-          <button type="button" id="audioUploadBtn" class="attachment-upload-btn" disabled>＋ 음성 기록 추가</button>
+          <label>파일
+            <input id="attachmentFile" type="file" accept="audio/*,image/jpeg,image/png,image/webp,image/gif" />
+          </label>
+          <button type="button" id="attachmentUploadBtn" class="attachment-upload-btn" disabled>＋ 첨부자료 업로드</button>
         </div>
 
         <div id="attachmentMessage" class="message" hidden></div>
@@ -98,6 +149,17 @@
       </section>
     </section>
   </main>
+
+  <div class="inline-attach-modal" id="inlineAttachModal" hidden>
+    <div class="inline-attach-dialog">
+      <div class="inline-attach-dialog__head">
+        <div><span>INLINE ARCHIVE</span><h3>본문에 첨부자료 삽입</h3></div>
+        <button type="button" id="inlineAttachClose">×</button>
+      </div>
+      <p>본문에서 선택한 커서 위치에 첨부자료 표식을 삽입합니다.</p>
+      <div id="inlineAttachList" class="inline-attach-list"></div>
+    </div>
+  </div>
   <script src="../archive-data.js"></script>
   <script src="admin.js"></script>
 </body>

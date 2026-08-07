@@ -1,6 +1,6 @@
 # 慮 記錄網 · MASTER README
 
-CURRENT VERSION: v13.4 INLINE ATTACH + TRIAD HANJA MASTER
+CURRENT VERSION: v13.5 ATTACH FIX + TRIAD BLUE MASTER
 UPDATED: 2026-08-08
 
 ## 프로젝트 개요
@@ -128,6 +128,16 @@ Cloudflare R2 버킷을 하나 생성합니다.
 
 ## 업데이트 이력
 
+### v13.5 ATTACH FIX + TRIAD BLUE MASTER
+- `record_attachments` 테이블이 아직 없는 배포 환경에서도 관리자 API가 자동으로 테이블을 생성하도록 보강
+- 기존 D1에서 migration을 누락해도 `첨부자료를 불러오지 못했습니다` 오류가 발생하지 않도록 수정
+- 첨부자료 GET / POST / DELETE 및 공개 사건 상세에서 동일한 자동 초기화 적용
+- 담당 삼직 / 기록관 영역의 금색·특수 강조 제거
+- 괴이 유형과 같은 일반 파란 계열 선택 UI로 통일
+- 기록관도 탐·연·호와 동일한 평범한 선택 항목으로 표시
+- 관리자에서는 탐·연·호 한글 유지
+- 공개 게시글에서는 探·硏·護 한자 자동 표시 유지
+
 ### v13.4 INLINE ATTACH + TRIAD HANJA MASTER
 - 관리자 삼직 입력을 `[체크박스] 탐 - [번호]` / `[체크박스] 연 - [번호]` / `[체크박스] 호 - [번호]` 형태로 정리
 - 관리자에서는 탐·연·호 한글로 표시
@@ -190,3 +200,6 @@ README는 앞으로 이 `README.md` 하나만 유지합니다.
 8. 공개 게시글에서는 표식 자체는 보이지 않고 그 위치에 실제 자료 열람 카드가 표시됩니다.
 
 관리자에서는 표식을 남겨 위치를 명확히 확인할 수 있게 했습니다.
+
+
+> v13.5부터 첨부자료용 D1 테이블은 API가 필요 시 자동 생성합니다. 단, 실제 파일 업로드를 위해 Cloudflare R2 바인딩 `MEDIA`는 여전히 필요합니다.

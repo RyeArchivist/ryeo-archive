@@ -23,6 +23,25 @@ function requireAdmin(context) {
   return { email };
 }
 
+
+async function ensureAttachmentTable(env){
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS record_attachments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      record_id INTEGER NOT NULL,
+      attachment_type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      file_key TEXT,
+      external_url TEXT,
+      mime_type TEXT,
+      public_level TEXT NOT NULL DEFAULT 'PUBLIC',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE
+    )
+  `).run();
+}
+
 export async function onRequestGet(context) {
   try {
     const id = clean(context.params.id, 80);
@@ -33,6 +52,7 @@ export async function onRequestGet(context) {
     if (!row) return json({ error: '공개된 기록을 찾을 수 없습니다.' }, 404);
 
     let attachments = [];
+    try { await ensureAttachmentTable(context.env); } catch (_) {}
     try {
       const result = await context.env.DB.prepare(`
         SELECT id, attachment_type, title, file_key, external_url, mime_type, sort_order

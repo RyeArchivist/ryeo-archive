@@ -9,8 +9,28 @@ function requireAdmin(context){
   if(allowed&&email!==allowed)return {error:json({error:'허용되지 않은 관리자 계정입니다.'},403)};
   return {email};
 }
+
+async function ensureAttachmentTable(env){
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS record_attachments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      record_id INTEGER NOT NULL,
+      attachment_type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      file_key TEXT,
+      external_url TEXT,
+      mime_type TEXT,
+      public_level TEXT NOT NULL DEFAULT 'PUBLIC',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE
+    )
+  `).run();
+}
+
 export async function onRequestDelete(context){
   const auth=requireAdmin(context);if(auth.error)return auth.error;
+  try{await ensureAttachmentTable(context.env)}catch(error){return json({error:'첨부자료 저장소를 초기화하지 못했습니다.',detail:error.message},500)}
   const id=Number(context.params.id);if(!id)return json({error:'잘못된 첨부자료 번호입니다.'},400);
   try{
     const row=await context.env.DB.prepare('SELECT file_key FROM record_attachments WHERE id=?').bind(id).first();

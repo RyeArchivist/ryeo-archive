@@ -12,8 +12,32 @@ function requireAdmin(context){
 }
 function safeName(name='file.bin'){return name.normalize('NFKC').replace(/[^\w.\-가-힣]/g,'_').slice(0,120)}
 
+
+async function ensureAttachmentTable(env){
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS record_attachments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      record_id INTEGER NOT NULL,
+      attachment_type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      file_key TEXT,
+      external_url TEXT,
+      mime_type TEXT,
+      public_level TEXT NOT NULL DEFAULT 'PUBLIC',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE
+    )
+  `).run();
+  await env.DB.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_record_attachments_record_id
+    ON record_attachments(record_id, sort_order, id)
+  `).run();
+}
+
 export async function onRequestGet(context){
   const auth=requireAdmin(context);if(auth.error)return auth.error;
+  try{await ensureAttachmentTable(context.env)}catch(error){return json({error:'첨부자료 저장소를 초기화하지 못했습니다.',detail:error.message},500)}
   const url=new URL(context.request.url),recordId=Number(url.searchParams.get('record_id'));
   if(!recordId)return json({error:'record_id가 필요합니다.'},400);
   try{
@@ -25,6 +49,7 @@ export async function onRequestGet(context){
 
 export async function onRequestPost(context){
   const auth=requireAdmin(context);if(auth.error)return auth.error;
+  try{await ensureAttachmentTable(context.env)}catch(error){return json({error:'첨부자료 저장소를 초기화하지 못했습니다.',detail:error.message},500)}
   if(!context.env.MEDIA)return json({error:'R2 MEDIA 바인딩이 없습니다. Cloudflare Pages 설정에서 R2 바인딩 이름을 MEDIA로 연결하세요.'},500);
   try{
     const form=await context.request.formData();

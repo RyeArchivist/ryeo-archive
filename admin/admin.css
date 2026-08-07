@@ -311,3 +311,82 @@
 @media(max-width:520px){
   .attachment-upload-grid{grid-template-columns:1fr}
 }
+
+
+/* v13.5 · 담당 삼직/기록관: 일반 입력 UI와 동일한 파란 계열, 특별 박스 제거 */
+.triad-assignment{
+  margin:0;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.triad-assignment legend{
+  padding:0!important;
+  margin:0 0 7px!important;
+  color:#8fa3b6!important;
+  font-size:11px!important;
+  letter-spacing:0!important;
+}
+.triad-assignment__help{
+  margin:0 0 8px!important;
+  color:#587087!important;
+  font-size:9px!important;
+}
+.triad-assignment__grid{
+  padding:10px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:#091520;
+  gap:8px;
+}
+.triad-role,
+.triad-role--keeper{
+  min-height:42px;
+  border:1px solid #1a2b3d!important;
+  border-radius:6px;
+  background:#0b1825!important;
+  box-shadow:none!important;
+}
+.triad-role:hover,
+.triad-role--keeper:hover{
+  border-color:#3d6685!important;
+  background:#102235!important;
+}
+.triad-role:has(input[type="checkbox"]:checked),
+.triad-role--keeper:has(input[type="checkbox"]:checked){
+  border-color:#4d82a9!important;
+  background:#15304a!important;
+  color:#e5f3ff!important;
+  box-shadow:0 0 14px rgba(77,130,169,.12)!important;
+}
+.triad-role input[type="checkbox"]{
+  accent-color:#66a9d8!important;
+}
+.triad-role__name{
+  color:#b3c3d1!important;
+}
+.triad-role:has(input[type="checkbox"]:checked) .triad-role__name{
+  color:#e5f3ff!important;
+}
+.triad-role__dash{
+  color:#587087!important;
+}
+.triad-role__number{
+  border:1px solid #203246!important;
+  border-radius:5px;
+  background:#08131f!important;
+  color:#dce8f2!important;
+}
+.triad-role__number:focus{
+  outline:none;
+  border-color:#4d82a9!important;
+  box-shadow:0 0 0 2px rgba(77,130,169,.12);
+}
+.triad-assignment__preview{
+  margin-top:8px!important;
+  padding-top:0!important;
+  border-top:0!important;
+  color:#587087!important;
+  font-size:9px!important;
+}

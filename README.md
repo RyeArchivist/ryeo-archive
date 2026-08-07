@@ -1,6 +1,6 @@
 # 慮 記錄網 · MASTER README
 
-CURRENT VERSION: v13.6 STABILITY MASTER
+CURRENT VERSION: v13.7 DRAFT ATTACH MASTER
 UPDATED: 2026-08-08
 
 ## 프로젝트 개요
@@ -128,6 +128,16 @@ Cloudflare R2 버킷을 하나 생성합니다.
 
 ## 업데이트 이력
 
+### v13.7 DRAFT ATTACH MASTER
+- 새 사건에서도 `기록 저장` 전에 음성/이미지 업로드 가능
+- 첫 첨부 업로드 시 사용자에게 보이지 않는 비공개 `DRAFT-*` 기록을 자동 생성
+- 작성 중인 폼 내용은 그대로 유지하고 첨부자료만 임시 기록에 연결
+- 마지막 `기록 저장` 시 같은 D1 row가 실제 `RY-연도-번호` 사건으로 확정되므로 첨부 ID와 본문 위치가 유지됨
+- 24시간 이상 방치된 DRAFT 기록은 다음 임시 기록 생성 시 자동 정리
+- 관리자 목록에서는 DRAFT 기록을 숨김
+- 첨부자료 UX를 `자료 업로드 → 본문 위치 삽입 → 최종 기록 저장` 순서로 변경
+- 실제 파일 저장은 계속 Cloudflare R2를 사용하므로 Pages R2 바인딩 `MEDIA`가 필수
+
 ### v13.6 STABILITY MASTER
 - 관리자 시작 시 `currentAttachments`가 초기화되기 전에 `clearForm()`이 실행되던 JavaScript 순서 오류 수정
 - `Cannot access 'currentAttachments' before initialization` 오류 수정
@@ -213,3 +223,20 @@ README는 앞으로 이 `README.md` 하나만 유지합니다.
 
 
 > v13.5부터 첨부자료용 D1 테이블은 API가 필요 시 자동 생성합니다. 단, 실제 파일 업로드를 위해 Cloudflare R2 바인딩 `MEDIA`는 여전히 필요합니다.
+
+
+## Cloudflare R2 필수 설정
+
+화면에 `R2 MEDIA 바인딩이 없습니다`가 보인다면 코드 오류가 아니라 Cloudflare 프로젝트에 R2 저장소가 아직 연결되지 않은 상태입니다.
+
+Cloudflare Dashboard에서:
+1. R2 Object Storage → Create bucket
+2. 예: bucket name `ryeo-media`
+3. Pages 프로젝트 → Settings → Bindings
+4. R2 bucket binding 추가
+5. Variable name을 정확히 `MEDIA`
+6. 방금 만든 `ryeo-media` 선택
+7. 저장 후 새 배포
+
+D1은 글/메타데이터를 저장하고, MP3·이미지 같은 실제 파일은 R2가 저장합니다.
+R2 바인딩 없이 실제 첨부파일 업로드는 동작할 수 없습니다.

@@ -398,9 +398,9 @@ function attachmentMsg(text, error = false) {
 function resetAttachments() {
   currentAttachments = [];
   const btn = $('attachmentUploadBtn');
-  if (btn) btn.disabled = true;
+  if (btn) btn.disabled = false;
   const hint = $('attachmentHint');
-  if (hint) hint.textContent = '사건을 먼저 저장하면 자료를 첨부할 수 있습니다.';
+  if (hint) hint.textContent = '새 사건도 자료부터 업로드할 수 있습니다. 첫 업로드 시 비공개 임시 기록이 자동 생성됩니다.';
   const list = $('attachmentList');
   if (list) list.innerHTML = '<p class="loading">선택된 기록 없음</p>';
   const file = $('attachmentFile');
@@ -461,7 +461,7 @@ function renderAttachments(items = []) {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || '삭제 실패');
         attachmentMsg('첨부 기록이 삭제되었습니다.');
-        if (selected?.id) await loadAttachments(selected.id);
+        if (selected?.id) await loadAttachments(recordId);
       } catch (error) {
         attachmentMsg(error.message, true);
       }
@@ -471,11 +471,11 @@ function renderAttachments(items = []) {
 
 async function loadAttachments(recordId) {
   const btn = $('attachmentUploadBtn');
-  if (btn) btn.disabled = !recordId;
+  if (btn) btn.disabled = false;
   const hint = $('attachmentHint');
   if (hint) hint.textContent = recordId
     ? '음성·이미지를 업로드한 뒤 본문 원하는 위치에 삽입할 수 있습니다.'
-    : '사건을 먼저 저장하면 자료를 첨부할 수 있습니다.';
+    : '새 사건도 자료부터 업로드할 수 있습니다. 첫 업로드 시 임시 기록을 자동 준비합니다.';
 
   if (!recordId) return resetAttachments();
 
@@ -502,13 +502,37 @@ if ($('attachmentType')) {
   });
 }
 
+
+async function ensureDraftRecordForAttachment() {
+  if (selected?.id) return selected.id;
+
+  const response = await fetch('/api/admin/records/draft', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { accept: 'application/json' }
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || '첨부용 임시 기록 생성 실패');
+
+  // 사용자가 작성 중인 폼 값은 건드리지 않고 내부 id만 연결한다.
+  selected = {
+    id: Number(data.id),
+    record_no: data.record_no,
+    title: '임시 기록',
+    __draft: true
+  };
+  $('recordId').value = String(data.id);
+  $('editorTitle').textContent = '새 사건 기록 · 첨부자료 준비됨';
+  $('deleteBtn').hidden = true;
+
+  const hint = $('attachmentHint');
+  if (hint) hint.textContent = '첨부자료가 임시 기록에 보관됩니다. 최종적으로 “기록 저장”을 누르면 현재 사건에 확정됩니다.';
+
+  return Number(data.id);
+}
+
 if ($('attachmentUploadBtn')) {
   $('attachmentUploadBtn').addEventListener('click', async () => {
-    if (!selected?.id) {
-      attachmentMsg('사건을 먼저 저장하세요.', true);
-      return;
-    }
-
     const file = $('attachmentFile')?.files?.[0];
     if (!file) {
       attachmentMsg('첨부 파일을 선택하세요.', true);
@@ -516,8 +540,17 @@ if ($('attachmentUploadBtn')) {
     }
 
     const type = $('attachmentType')?.value || 'AUDIO';
+
+    let recordId;
+    try {
+      recordId = await ensureDraftRecordForAttachment();
+    } catch (error) {
+      attachmentMsg(error.message, true);
+      return;
+    }
+
     const form = new FormData();
-    form.append('record_id', String(selected.id));
+    form.append('record_id', String(recordId));
     form.append('attachment_type', type);
     form.append('title', $('attachmentTitle')?.value.trim() || (type === 'IMAGE' ? '이미지 기록' : '음성 기록'));
     form.append('file', file);
@@ -544,8 +577,8 @@ if ($('attachmentUploadBtn')) {
 }
 
 function openInlineAttachModal() {
-  if (!selected?.id) {
-    msg('본문에 첨부자료를 넣으려면 사건을 먼저 저장하세요.', true);
+  if (!selected?.id && !currentAttachments.length) {
+    msg('먼저 첨부자료를 업로드하세요. 새 사건이라도 저장 전에 업로드할 수 있습니다.', true);
     return;
   }
   pendingInlineCursor = $('content')?.selectionStart ?? null;
@@ -587,7 +620,7 @@ if ($('attachmentJumpBtn')) {
     manager.classList.add('attachment-focus');
     setTimeout(() => manager.classList.remove('attachment-focus'), 1400);
     if (!selected?.id) {
-      attachmentMsg('새 사건은 먼저 "기록 저장"을 눌러 저장한 뒤 첨부할 수 있습니다.', true);
+      attachmentMsg('새 사건도 자료부터 업로드할 수 있습니다. 파일을 선택하고 업로드하면 비공개 임시 기록을 자동 준비합니다.');
     } else {
       attachmentMsg('음성 또는 이미지를 업로드한 뒤 “본문 삽입”으로 원하는 위치에 넣을 수 있습니다.');
     }

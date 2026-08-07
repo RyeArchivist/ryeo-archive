@@ -235,6 +235,10 @@ function beginRyeoTransition() {
   if (searchInput) searchInput.blur();
   resetTransitionTyping();
 
+  // v13.6: 전환 애니메이션이 도는 동안 D1 기록을 미리 불러온다.
+  // 화면 진입 후 '연결 중' 대기 시간을 최소화한다.
+  loadDynamicRyeoRecords({ silent: true }).catch(() => {});
+
   // 1단계: 慮 로고만 보여주기
   queueTransitionTimer(() => {
     transition?.classList.add('phase-emblem-out');
@@ -646,14 +650,37 @@ function bindPublicArchiveControls() {
   if (button && !button.dataset.bound) { button.dataset.bound='1'; button.addEventListener('click', runSearch); }
   if (search && !search.dataset.bound) { search.dataset.bound='1'; search.addEventListener('keydown', event => { if (event.key === 'Enter') runSearch(); }); }
 }
-async function loadDynamicRyeoRecords() {
-  const tbody = document.querySelector('.ryeo-view[data-view="records"] .ryeo-table tbody');
-  const dashBody = document.querySelector('.ryeo-view[data-view="dashboard"] .ryeo-table tbody');
-  bindPublicArchiveControls();
-  if (tbody) tbody.innerHTML = '<tr class="record-loading-row"><td colspan="6">기록망에서 자료를 불러오는 중…</td></tr>';
+let ryeoRecordsLoadPromise = null;
+let ryeoRecordsLoadedOnce = false;
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(`/api/records?limit=500&_=${Date.now()}`, { headers: { accept: 'application/json' }, cache: 'no-store' });
-    const data = await response.json();
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
+async function loadDynamicRyeoRecords({ silent = false, force = false } = {}) {
+  if (ryeoRecordsLoadPromise && !force) return ryeoRecordsLoadPromise;
+  if (ryeoRecordsLoadedOnce && !force) {
+    renderPublicRecordDirectory();
+    return dynamicRecordState.records;
+  }
+
+  ryeoRecordsLoadPromise = (async () => {
+    const tbody = document.querySelector('.ryeo-view[data-view="records"] .ryeo-table tbody');
+    const dashBody = document.querySelector('.ryeo-view[data-view="dashboard"] .ryeo-table tbody');
+    bindPublicArchiveControls();
+    if (tbody && !silent) tbody.innerHTML = '<tr class="record-loading-row"><td colspan="6">기록망에서 자료를 불러오는 중…</td></tr>';
+    try {
+      const response = await fetchWithTimeout(`/api/records?limit=500&_=${Date.now()}`, {
+        headers: { accept: 'application/json' },
+        cache: 'no-store'
+      }, 7000);
+      const data = await response.json();
     if (!response.ok) throw new Error(data.error || '기록 목록 오류');
     dynamicRecordState.records = (data.records || []).slice().sort((a, b) => compareRecordNumbers(a, b, 'newest'));
 
@@ -679,7 +706,18 @@ async function loadDynamicRyeoRecords() {
     if (activeEl) activeEl.textContent = '활성 보고 연결 오류';
     if (unresolvedEl) unresolvedEl.textContent = '미해명 연결 오류';
     if (containmentEl) containmentEl.textContent = '격리 유지 연결 오류';
+    if (error?.name === 'AbortError' && tbody) {
+      tbody.innerHTML = '<tr class="record-loading-row"><td colspan="6">기록망 응답이 지연되고 있습니다. 잠시 후 다시 시도하십시오.</td></tr>';
+    }
+    throw error;
+  } finally {
+    ryeoRecordsLoadPromise = null;
   }
+  ryeoRecordsLoadedOnce = true;
+  return dynamicRecordState.records;
+  })();
+
+  return ryeoRecordsLoadPromise;
 }
 
 function attachmentCardHtml(item, inline = false) {
@@ -825,4 +863,4 @@ async function openDynamicRecord(id) {
 }
 document.querySelectorAll('[data-record-close]').forEach(el => el.addEventListener('click',()=>{document.getElementById('recordModal').hidden=true;document.body.style.overflow='';}));
 const originalActivateRyeoModeDynamic = activateRyeoMode;
-activateRyeoMode = function(){ originalActivateRyeoModeDynamic(); loadDynamicRyeoRecords(); };
+activateRyeoMode = function(){ originalActivateRyeoModeDynamic(); loadDynamicRyeoRecords().catch(()=>{}); };

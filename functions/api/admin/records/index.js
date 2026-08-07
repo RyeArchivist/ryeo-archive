@@ -50,7 +50,7 @@ export async function onRequestGet(context) {
   if (auth.error) return auth.error;
   try {
     const result = await context.env.DB.prepare(`
-      SELECT * FROM records ORDER BY created_at DESC LIMIT 200
+      SELECT * FROM records ORDER BY created_at DESC LIMIT 2000
     `).all();
     return json({ records: result.results || [], admin: auth.email });
   } catch (error) {

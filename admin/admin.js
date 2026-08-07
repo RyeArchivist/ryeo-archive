@@ -26,6 +26,10 @@ const fields = {
   is_published: $('published'),
 };
 
+// v13.6 · attachment state must be initialized before clearForm()/load()
+let currentAttachments = [];
+let pendingInlineCursor = null;
+
 function typeCheckboxes() {
   return [...document.querySelectorAll('input[name="recordType"]')];
 }
@@ -382,8 +386,6 @@ load();
 // ─────────────────────────────────────────────────────────────
 // v13.4 MASTER · generic attachment manager + inline placement
 // ─────────────────────────────────────────────────────────────
-let currentAttachments = [];
-let pendingInlineCursor = null;
 
 function attachmentMsg(text, error = false) {
   const el = $('attachmentMessage');

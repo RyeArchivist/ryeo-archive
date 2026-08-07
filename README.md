@@ -1,6 +1,6 @@
 # 慮 記錄網 · MASTER README
 
-CURRENT VERSION: v13.5 ATTACH FIX + TRIAD BLUE MASTER
+CURRENT VERSION: v13.6 STABILITY MASTER
 UPDATED: 2026-08-08
 
 ## 프로젝트 개요
@@ -127,6 +127,16 @@ Cloudflare R2 버킷을 하나 생성합니다.
 ---
 
 ## 업데이트 이력
+
+### v13.6 STABILITY MASTER
+- 관리자 시작 시 `currentAttachments`가 초기화되기 전에 `clearForm()`이 실행되던 JavaScript 순서 오류 수정
+- `Cannot access 'currentAttachments' before initialization` 오류 수정
+- 이 오류 때문에 관리자 기록 목록이 0건처럼 보이고 첨부자료가 동작하지 않던 문제 수정
+- 관리자 기록 조회 한도를 200건 → 2000건으로 확대하여 이미 존재하는 기록이 목록에서 숨는 문제 방지
+- 내부 기록망 진입 애니메이션 중 D1 사건 목록을 선행 로드하도록 변경
+- 동일 기록 목록 요청 중복 실행 방지(single-flight)
+- D1 요청 7초 타임아웃 추가: 무한히 `기록망과 연결 중` 상태로 남지 않도록 수정
+- 전환 완료 시 이미 받아온 데이터를 즉시 표시하여 체감 진입 속도 개선
 
 ### v13.5 ATTACH FIX + TRIAD BLUE MASTER
 - `record_attachments` 테이블이 아직 없는 배포 환경에서도 관리자 API가 자동으로 테이블을 생성하도록 보강

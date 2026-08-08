@@ -70,9 +70,9 @@
    ───────────────────────────────────────── */
 .ry-signal-value{
   position:absolute;
-  left:76.15%;
-  top:25.25%;
-  width:8.10%;
+  left:75.7%;
+  top:24.7%;
+  width:9.2%;
   font:400 clamp(13px,1.85vw,31px)/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   color:#dfc27f;
   letter-spacing:.01em;
@@ -83,10 +83,10 @@
 
 .ry-signal-bars{
   position:absolute;
-  left:76.15%;
-  top:28.05%;
-  width:10.90%;
-  height:.72%;
+  left:75.7%;
+  top:28.25%;
+  width:11.8%;
+  height:.82%;
   border:1px solid rgba(217,185,120,.20);
   background:rgba(217,185,120,.06);
   overflow:hidden;
@@ -108,10 +108,10 @@
    ───────────────────────────────────────── */
 .ry-audio-toggle{
   position:absolute;
-  left:37.25%;
-  top:74.00%;
-  width:22.55%;
-  height:11.35%;
+  left:36.9%;
+  top:73.7%;
+  width:23.4%;
+  height:11.8%;
   padding:0;
   border:0;
   background:transparent;
@@ -123,7 +123,7 @@
   position:absolute;
   top:50%;
   transform:translateY(-50%);
-  font-size:clamp(18px,2.15vw,38px);
+  font-size:clamp(19px,2.3vw,40px);
   line-height:1;
   text-shadow:0 0 9px rgba(239,211,150,.45);
   transition:opacity .18s, filter .18s;
@@ -152,9 +152,9 @@
    ───────────────────────────────────────── */
 .ry-rec-led{
   position:absolute;
-  left:85.78%;
-  top:79.64%;
-  width:.92%;
+  left:85.95%;
+  top:79.65%;
+  width:1.05%;
   aspect-ratio:1;
   transform:translate(-50%,-50%);
   border-radius:50%;

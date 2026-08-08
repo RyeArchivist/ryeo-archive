@@ -57,7 +57,7 @@
 .ry-audio-wave{
   position:absolute;
   left:29.0%;
-  top:30.80%;
+  top:28.80%;
   width:60.5%;
   height:40.20%;
   pointer-events:none;
@@ -108,9 +108,9 @@
    ───────────────────────────────────────── */
 .ry-audio-toggle{
   position:absolute;
-  left:35.9%;
+  left:31.9%;
   top:74.7%;
-  width:30.4%;
+  width:32.4%;
   height:11.8%;
   padding:0;
   border:0;
@@ -152,8 +152,8 @@
    ───────────────────────────────────────── */
 .ry-rec-led{
   position:absolute;
-  left:87.35%;
-  top:81.2%;
+  left:87.37%;
+  top:81.15%;
   width:1.35%;
   aspect-ratio:1;
   transform:translate(-50%,-50%);

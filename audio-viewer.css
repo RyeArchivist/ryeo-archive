@@ -56,9 +56,9 @@
    ───────────────────────────────────────── */
 .ry-audio-wave{
   position:absolute;
-  left:29.50%;
+  left:30.50%;
   top:31.80%;
-  width:61.5%;
+  width:62.5%;
   height:26.20%;
   pointer-events:none;
   filter:drop-shadow(0 0 6px rgba(232,207,151,.28));
@@ -71,7 +71,7 @@
 .ry-signal-value{
   position:absolute;
   left:78.7%;
-  top:18.5%;
+  top:20.5%;
   width:9.2%;
   font:400 clamp(13px,1.85vw,31px)/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   color:#dfc27f;
@@ -85,7 +85,7 @@
   position:absolute;
   left:78.7%;
   top:23.25%;
-  width:11.1%;
+  width:10.1%;
   height:1.22%;
   border:1px solid rgba(217,185,120,.20);
   background:rgba(217,185,120,.06);

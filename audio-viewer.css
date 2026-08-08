@@ -108,7 +108,7 @@
    ───────────────────────────────────────── */
 .ry-audio-toggle{
   position:absolute;
-  left:33.9%;
+  left:32.5%;
   top:74.7%;
   width:32.4%;
   height:11.8%;
@@ -153,7 +153,7 @@
 .ry-rec-led{
   position:absolute;
   left:87.37%;
-  top:81.14%;
+  top:81.13%;
   width:1.35%;
   aspect-ratio:1;
   transform:translate(-50%,-50%);

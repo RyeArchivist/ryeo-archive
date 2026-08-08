@@ -71,7 +71,7 @@
 .ry-signal-value{
   position:absolute;
   left:78.7%;
-  top:20.7%;
+  top:18.7%;
   width:9.2%;
   font:400 clamp(13px,1.85vw,31px)/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   color:#dfc27f;
@@ -84,9 +84,9 @@
 .ry-signal-bars{
   position:absolute;
   left:78.7%;
-  top:25.25%;
+  top:20.25%;
   width:13.8%;
-  height:.82%;
+  height:1.22%;
   border:1px solid rgba(217,185,120,.20);
   background:rgba(217,185,120,.06);
   overflow:hidden;

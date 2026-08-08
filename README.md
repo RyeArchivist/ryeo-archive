@@ -1,6 +1,6 @@
 # 慮 記錄網 · MASTER README
 
-CURRENT VERSION: v13.7 DRAFT ATTACH MASTER
+CURRENT VERSION: v13.8 AUDIO PERCENT ALIGN MASTER
 UPDATED: 2026-08-08
 
 ## 프로젝트 개요
@@ -127,6 +127,16 @@ Cloudflare R2 버킷을 하나 생성합니다.
 ---
 
 ## 업데이트 이력
+
+### v13.8 AUDIO PERCENT ALIGN MASTER
+- AUDIO VIEWER 기준 배경을 최신 `1630×965` `ry-audio-viewer-bg.webp`로 교체
+- `.ry-audio-shell` 비율을 기존 16:9에서 실제 배경 비율 `1630/965`로 변경
+- 배경 `object-fit: cover` 제거, `contain` 사용으로 크롭에 의한 좌표 오차 제거
+- 파형 / SIGNAL 값 / SIGNAL bar / 재생·일시정지 / REC LED를 모두 이미지 기준 `%` 좌표로 재정렬
+- 새 배경에 이미 존재하는 고정 SIGNAL 라벨을 웹에서 중복 표시하지 않도록 제거
+- 중앙 재생 버튼판 전체를 실제 클릭 영역으로 설정
+- REC LED를 배경의 원형 소켓 정중앙에 배치
+- AUDIO VIEWER CSS / JS / 배경 이미지에 `v13.8` 캐시 버전 적용
 
 ### v13.7 DRAFT ATTACH MASTER
 - 새 사건에서도 `기록 저장` 전에 음성/이미지 업로드 가능

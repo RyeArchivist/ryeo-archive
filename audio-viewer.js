@@ -1,11 +1,11 @@
 
 class RYAudioViewer{
-  constructor(bg='/assets/ry-audio-viewer-bg.webp'){this.bg=bg;this.signal=67;this.target=67;this.timer=0;this.raf=0;this.build()}
+  constructor(bg='/assets/ry-audio-viewer-bg.webp?v=13.8'){this.bg=bg;this.signal=67;this.target=67;this.timer=0;this.raf=0;this.build()}
   build(){
     const m=document.createElement('div');m.className='ry-audio-modal';m.hidden=true;
     m.innerHTML=`<div class="ry-audio-shell" role="dialog" aria-modal="true" aria-label="려 음성 기록 재생">
       <img class="ry-audio-bg" alt="" draggable="false"><div class="ry-wave-mask"></div><canvas class="ry-audio-wave"></canvas>
-      <div class="ry-signal-mask"></div><div class="ry-signal-label">SIGNAL INTEGRITY</div><div class="ry-signal-value">67%</div><div class="ry-signal-bars"><i></i></div>
+      <div class="ry-signal-mask"></div><div class="ry-signal-value">67%</div><div class="ry-signal-bars"><i></i></div>
       <div class="ry-rec-led"></div>
       <button class="ry-audio-toggle" type="button" aria-pressed="false" aria-label="재생 또는 일시정지"><span class="play-icon">▶</span><span class="pause-icon">Ⅱ</span></button>
       <button class="ry-audio-close" type="button" aria-label="닫기">×</button><div class="ry-audio-caption"></div><audio preload="metadata"></audio></div>`;

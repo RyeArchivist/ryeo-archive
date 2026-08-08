@@ -110,7 +110,7 @@
   position:absolute;
   left:35.9%;
   top:74.7%;
-  width:24.4%;
+  width:26.4%;
   height:11.8%;
   padding:0;
   border:0;
@@ -152,8 +152,8 @@
    ───────────────────────────────────────── */
 .ry-rec-led{
   position:absolute;
-  left:87.55%;
-  top:80.95%;
+  left:87.15%;
+  top:81.0%;
   width:1.35%;
   aspect-ratio:1;
   transform:translate(-50%,-50%);

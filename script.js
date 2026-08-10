@@ -744,6 +744,62 @@ function attachmentCardHtml(item, inline = false) {
   </a>`;
 }
 
+/* v13.9 · 기록 본문 원문 구조 렌더러
+   DB에는 plain text 그대로 저장한다.
+   빈 줄은 문단 경계로, "- "로 시작하는 연속 행은 실제 목록으로 표시한다.
+   첨부자료 토큰([[ATTACHMENT:id]])은 기존 위치를 그대로 유지한다.
+*/
+function appendRecordText(container, text) {
+  const source = String(text || '').replace(/\r\n?/g, '\n');
+  const lines = source.split('\n');
+  let paragraph = [];
+  let list = [];
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    const p = document.createElement('p');
+    p.className = 'record-content-paragraph';
+    p.textContent = paragraph.join('\n');
+    container.appendChild(p);
+    paragraph = [];
+  };
+
+  const flushList = () => {
+    if (!list.length) return;
+    const ul = document.createElement('ul');
+    ul.className = 'record-content-list';
+    list.forEach((value) => {
+      const li = document.createElement('li');
+      li.textContent = value;
+      ul.appendChild(li);
+    });
+    container.appendChild(ul);
+    list = [];
+  };
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      flushParagraph();
+      flushList();
+      return;
+    }
+
+    if (/^[-–—]\s+/.test(trimmed)) {
+      flushParagraph();
+      list.push(trimmed.replace(/^[-–—]\s+/, ''));
+      return;
+    }
+
+    flushList();
+    paragraph.push(line);
+  });
+
+  flushParagraph();
+  flushList();
+}
+
 function renderRecordContentWithAttachments(container, content, attachments) {
   container.innerHTML = '';
   const map = new Map((attachments || []).map(item => [String(item.id), item]));
@@ -754,13 +810,7 @@ function renderRecordContentWithAttachments(container, content, attachments) {
   let match;
 
   while ((match = token.exec(source))) {
-    const text = source.slice(last, match.index);
-    if (text) {
-      const span = document.createElement('span');
-      span.className = 'record-content-text';
-      span.textContent = text;
-      container.appendChild(span);
-    }
+    appendRecordText(container, source.slice(last, match.index));
 
     const item = map.get(match[1]);
     const block = document.createElement('div');
@@ -775,14 +825,7 @@ function renderRecordContentWithAttachments(container, content, attachments) {
     last = token.lastIndex;
   }
 
-  const tail = source.slice(last);
-  if (tail) {
-    const span = document.createElement('span');
-    span.className = 'record-content-text';
-    span.textContent = tail;
-    container.appendChild(span);
-  }
-
+  appendRecordText(container, source.slice(last));
   return used;
 }
 

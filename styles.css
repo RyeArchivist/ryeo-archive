@@ -3006,12 +3006,30 @@ body.mark-activated #searchInput {
 }
 
 
-/* v13.4 · 본문 삽입형 첨부자료 */
+/* v13.9 · 기록 본문 원문 구조 표시 + 본문 삽입형 첨부자료 */
 #recordModalContent{
+  white-space:normal;
+  word-break:keep-all;
+  overflow-wrap:break-word;
+  line-height:1.9;
+}
+#recordModalContent .record-content-paragraph{
+  margin:0 0 1.35em;
   white-space:pre-wrap;
 }
-#recordModalContent .record-content-text{
-  white-space:pre-wrap;
+#recordModalContent .record-content-list{
+  margin:.15em 0 1.45em;
+  padding-left:1.55em;
+  list-style:disc;
+}
+#recordModalContent .record-content-list li{
+  margin:.28em 0;
+  padding-left:.12em;
+  line-height:1.8;
+}
+#recordModalContent .record-content-paragraph:last-child,
+#recordModalContent .record-content-list:last-child{
+  margin-bottom:0;
 }
 .record-inline-attachment{
   display:block;

@@ -1,0 +1,13 @@
+RYEO Archive v13.9 display/admin patch
+
+Changes
+- Public record body now preserves original paragraph structure.
+- Consecutive lines beginning with "- " render as real bullet lists.
+- Inline attachment tokens remain supported at their original positions.
+- Admin record list sorts by RY record year descending, then serial descending.
+- Admin content textarea readability improved; plain-text line breaks remain the storage format.
+- No database schema migration is required for these changes.
+
+Important
+- Existing records must actually contain newline characters in records.content for old data to show paragraph breaks.
+- New records can be entered as plain text with blank lines and "- " bullets. No HTML/Markdown storage is required.

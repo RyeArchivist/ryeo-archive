@@ -390,3 +390,16 @@
   color:#587087!important;
   font-size:9px!important;
 }
+
+
+/* v13.9 · 기록 본문 편집 가독성
+   textarea 값 자체의 줄바꿈/빈 줄/목록 표기를 그대로 저장·편집한다. */
+#content{
+  min-height:520px;
+  padding:18px 20px;
+  line-height:1.9;
+  white-space:pre-wrap;
+  word-break:keep-all;
+  overflow-wrap:break-word;
+  tab-size:2;
+}

@@ -39,6 +39,25 @@ function recordYear(record) {
   return match ? Number(match[1]) : null;
 }
 
+function compareAdminRecordNoDesc(a, b) {
+  const ma = String(a?.record_no || '').match(/RY-(\d{4})-(\d+)/i);
+  const mb = String(b?.record_no || '').match(/RY-(\d{4})-(\d+)/i);
+
+  if (ma && mb) {
+    const yearDiff = Number(mb[1]) - Number(ma[1]);
+    if (yearDiff) return yearDiff;
+
+    const serialDiff = Number(mb[2]) - Number(ma[2]);
+    if (serialDiff) return serialDiff;
+  }
+
+  return String(b?.record_no || '').localeCompare(
+    String(a?.record_no || ''),
+    'ko',
+    { numeric: true }
+  );
+}
+
 function archiveCount(year) {
   return Number(ARCHIVE_INDEX.counts?.[String(year)] || 0);
 }
@@ -282,7 +301,7 @@ function render() {
     const yearMatch = selectedYear === 'all' || (selectedYear !== 'pre1912' && year === Number(selectedYear));
     const queryMatch = `${record.record_no} ${record.title}`.toLowerCase().includes(query);
     return yearMatch && queryMatch;
-  });
+  }).sort(compareAdminRecordNoDesc);
 
   updateAdminArchiveMeta(list.length);
 

@@ -50,7 +50,13 @@ export async function onRequestGet(context) {
   if (auth.error) return auth.error;
   try {
     const result = await context.env.DB.prepare(`
-      SELECT * FROM records WHERE record_no NOT LIKE 'DRAFT-%' ORDER BY created_at DESC LIMIT 2000
+      SELECT * FROM records
+      WHERE record_no NOT LIKE 'DRAFT-%'
+      ORDER BY
+        CAST(substr(record_no, 4, 4) AS INTEGER) DESC,
+        CAST(substr(record_no, 9) AS INTEGER) DESC,
+        id DESC
+      LIMIT 2000
     `).all();
     return json({ records: result.results || [], admin: auth.email });
   } catch (error) {

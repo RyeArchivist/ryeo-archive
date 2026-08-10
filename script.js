@@ -750,7 +750,15 @@ function attachmentCardHtml(item, inline = false) {
    첨부자료 토큰([[ATTACHMENT:id]])은 기존 위치를 그대로 유지한다.
 */
 function appendRecordText(container, text) {
-  const source = String(text || '').replace(/\r\n?/g, '\n');
+  let source = String(text || '').replace(/\r\n?/g, '\n');
+
+  /* v13.9.1 · legacy/plain SQL consoles may preserve the text but collapse
+     list line-breaks into spaces. Recover only explicit bullet markers here.
+     Normal paragraph breaks are still taken from the original DB text. */
+  source = source
+    .replace(/[ \t]+([-–—])[ \t]+(?=[^\n])/g, '\n$1 ')
+    .replace(/([^\n])[ \t]*\n[ \t]*([-–—])[ \t]+/g, '$1\n$2 ');
+
   const lines = source.split('\n');
   let paragraph = [];
   let list = [];
